@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daily Collection - Equb Manager</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f9; display: flex; }
+
+        .sidebar {
+            width: 220px; background: #1a2332; color: white; height: 100vh;
+            position: fixed; padding: 20px 0; overflow-y: auto;
+        }
+        .sidebar .logo { display: flex; align-items: center; gap: 12px; padding: 0 20px 20px; }
+        .sidebar .logo-icon {
+            width: 40px; height: 40px; background: #2c7be5; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+        }
+        .sidebar .logo-text { font-weight: bold; font-size: 16px; line-height: 1.3; }
+        .sidebar .logo-text span { display: block; font-size: 10px; font-weight: normal; color: #8b95a5; letter-spacing: 0.5px; }
+        .sidebar .section-label { padding: 16px 20px 6px; font-size: 11px; color: #6b7590; letter-spacing: 1px; }
+        .sidebar nav { margin-top: 4px; }
+        .sidebar a {
+            display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+            color: #c5cdd8; text-decoration: none; font-size: 14px; margin: 2px 10px; border-radius: 8px;
+        }
+        .sidebar a .icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar a.active { background: #2c7be5; color: white; }
+        .sidebar a:hover { background: #2a3547; }
+
+        .main-content { margin-left: 220px; padding: 24px; width: 100%; }
+
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .topbar h1 { margin: 0; font-size: 20px; color: #1a2332; }
+        .topbar input[type="date"] { padding: 8px 12px; border: 1px solid #d5dae0; border-radius: 6px; }
+        .topbar button {
+            width: auto; background: #d64545; padding: 8px 16px; border: none;
+            border-radius: 6px; color: white; cursor: pointer;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }
+
+        .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 30px; }
+        .stat-card { background: white; border: 1px solid #e0e4e8; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .stat-card .label { font-size: 12px; color: #6b7280; text-transform: uppercase; }
+        .stat-card .value { font-size: 22px; font-weight: bold; margin-top: 4px; color: #1e2a3a; }
+
+        .panel { background: white; border: 1px solid #e0e4e8; border-radius: 8px; padding: 16px; margin-bottom: 30px; }
+        .panel h2 { margin-top: 0; }
+
+        .badge-paid { color: #1b8a4a; background: #e6f7ec; padding: 3px 10px; border-radius: 12px; font-size: 12px; }
+        .badge-unpaid { color: #b02a2a; background: #fbe9e9; padding: 3px 10px; border-radius: 12px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">👥</div>
+            <div class="logo-text">EKUBE<span>MANAGEMENT SYSTEM</span></div>
+        </div>
+
+        <div class="section-label">MAIN</div>
+        <nav>
+            <a href="/index.html"><span class="icon">🏠</span> Dashboard</a>
+            <a href="/members.html"><span class="icon">👤</span> Members</a>
+            <a href="/payments.html"><span class="icon">💳</span> Payments</a>
+            <a href="/daily-collection.html" class="active"><span class="icon">📅</span> Daily Collection</a>
+            <a href="#"><span class="icon">🗓️</span> Weekly Collection</a>
+            <a href="#"><span class="icon">👥</span> Groups (Equb)</a>
+            <a href="#"><span class="icon">📊</span> Reports</a>
+            <a href="#"><span class="icon">📤</span> Export</a>
+        </nav>
+
+        <div class="section-label">OTHERS</div>
+        <nav>
+            <a href="#"><span class="icon">🔔</span> Notifications</a>
+            <a href="#"><span class="icon">⚙️</span> Settings</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <h1>Daily Collection</h1>
+            <input type="date" id="date_picker">
+            <button onclick="logout()">Log Out</button>
+        </div>
+
+        <div class="stat-cards">
+            <div class="stat-card"><div class="label">Total Collected</div><div class="value" id="stat_total">-</div></div>
+            <div class="stat-card"><div class="label">Members Paid</div><div class="value" id="stat_paid">-</div></div>
+            <div class="stat-card"><div class="label">Members Unpaid</div><div class="value" id="stat_unpaid">-</div></div>
+        </div>
+
+        <div class="panel">
+            <h2>Member Status</h2>
+            <table id="collection_table"></table>
+        </div>
+    </div>
+
+<script>
+async function checkAuth() {
+    const res = await fetch('/me');
+    if (!res.ok) {
+        window.location.href = '/login.html';
+        return false;
+    }
+    return true;
+}
+
+async function logout() {
+    await fetch('/logout', { method: 'POST' });
+    window.location.href = '/login.html';
+}
+
+async function loadCollection() {
+    const dateVal = document.getElementById('date_picker').value;
+    const url = dateVal ? `/daily-collection?date=${dateVal}` : '/daily-collection';
+    const res = await fetch(url);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    document.getElementById('stat_total').innerText = data.total_collected.toLocaleString() + ' Birr';
+    document.getElementById('stat_paid').innerText = data.paid_count;
+    document.getElementById('stat_unpaid').innerText = data.unpaid_count;
+
+    let html = '<tr><th>Member</th><th>Phone</th><th>Type</th><th>Amount Paid</th><th>Status</th></tr>';
+    data.members.forEach(m => {
+        const badge = m.status === 'paid'
+            ? `<span class="badge-paid">Paid</span>`
+            : `<span class="badge-unpaid">Not Paid</span>`;
+        html += `<tr>
+            <td>${m.full_name}</td>
+            <td>${m.phone || '-'}</td>
+            <td>${m.period_type}</td>
+            <td>${m.paid_today ? m.paid_today.toLocaleString() + ' Birr' : '-'}</td>
+            <td>${badge}</td>
+        </tr>`;
+    });
+    document.getElementById('collection_table').innerHTML = html;
+}
+
+document.getElementById('date_picker').addEventListener('change', loadCollection);
+
+(async () => {
+    const ok = await checkAuth();
+    if (ok) {
+        document.getElementById('date_picker').value = new Date().toISOString().split('T')[0];
+        loadCollection();
+    }
+})();
+</script>
+</body>
+</html>

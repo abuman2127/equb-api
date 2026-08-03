@@ -94,6 +94,10 @@
         #rounds_table th, #rounds_table td { border: 1px solid #e0e4e8; padding: 6px 10px; text-align: center; }
         #rounds_table th { background: #f0f2f5; }
         #rounds_table td:nth-child(2), #rounds_table th:nth-child(2) { text-align: left; font-weight: bold; }
+
+        .group-bar { margin-bottom:16px; }
+        .group-bar label { font-size:13px; color:#6b7280; margin-right:8px; }
+        .group-bar select { width:auto; display:inline-block; }
     </style>
 </head>
 <body>
@@ -104,30 +108,35 @@
             <div class="logo-text">EKUBE<span>MANAGEMENT SYSTEM</span></div>
         </div>
 
-        <div class="section-label">MAIN</div>
+    <div class="section-label">MAIN</div>
         <nav>
-            <a href="/index.html"><span class="icon">🏠</span> Dashboard</a>
-            <a href="/members.html" class="active"><span class="icon">👤</span> Members</a>
-            <a href="/index.html"><span class="icon">💳</span> Payments</a>
-            <a href="/index.html"><span class="icon">📅</span> Daily Collection</a>
-            <a href="/index.html"><span class="icon">🗓️</span> Weekly Collection</a>
-            <a href="/index.html"><span class="icon">👥</span> Groups (Equb)</a>
-            <a href="/index.html"><span class="icon">📊</span> Reports</a>
-            <a href="/index.html"><span class="icon">📤</span> Export</a>
-        </nav>
+        <a href="/index.html"><span class="icon">🏠</span> Dashboard</a>
+        <a href="/members.html"><span class="icon">👤</span> Members</a>
+        <a href="/payments.html"><span class="icon">💳</span> Payments</a>
+        <a href="/daily-collection.html"><span class="icon">📅</span> Daily Collection</a>
+        <a href="/weekly-collection.html"><span class="icon">🗓️</span> Weekly Collection</a>
+        <a href="/groups.html"><span class="icon">👥</span> Groups (Equb)</a>
+        <a href="/reports.html"><span class="icon">📊</span> Reports</a>
+        <a href="/export.html"><span class="icon">📤</span> Export</a>
+    </nav>
 
-        <div class="section-label">OTHERS</div>
-        <nav>
-            <a href="#"><span class="icon">🔔</span> Notifications</a>
-            <a href="#"><span class="icon">⚙️</span> Settings</a>
-        </nav>
+    <div class="section-label">OTHERS</div>
+    <nav>
+        <a href="#"><span class="icon">🔔</span> Notifications</a>
+        <a href="/settings.html"><span class="icon">⚙️</span> Settings</a>
+    </nav>
     </div>
 
     <div class="main-content">
         <div class="topbar">
             <h1>Members</h1>
-            <input class="search" placeholder="Search members...">
+            <input class="search" id="search_box" placeholder="Search members..." oninput="filterMembers()">
             <button onclick="logout()">Log Out</button>
+        </div>
+
+        <div class="group-bar">
+            <label>Viewing group:</label>
+            <select id="group_selector" onchange="loadRoundsTable()"></select>
         </div>
 
         <div class="member-panel">
@@ -143,6 +152,7 @@
                     <option value="daily">Daily</option>
                     <option value="weekly">Weekly</option>
                 </select>
+                <select id="m_group"></select>
                 <button onclick="addMember()">Save Member</button>
                 <div id="m_msg" class="msg"></div>
             </div>
@@ -168,16 +178,39 @@ async function logout() {
     window.location.href = '/login.html';
 }
 
+function filterMembers() {
+    const query = document.getElementById('search_box').value.toLowerCase();
+    const rows = document.querySelectorAll('#rounds_table tr');
+    rows.forEach((row, index) => {
+        if (index === 0) return;
+        const nameCell = row.cells[1];
+        if (!nameCell) return;
+        const name = nameCell.innerText.toLowerCase();
+        row.style.display = name.includes(query) ? '' : 'none';
+    });
+}
+
 function toggleAddMember() {
     const form = document.getElementById('add_member_form');
     form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+async function loadGroupOptions() {
+    const res = await fetch('/groups');
+    if (!res.ok) return;
+    const groups = await res.json();
+    const selector = document.getElementById('group_selector');
+    const memberGroupSelect = document.getElementById('m_group');
+    selector.innerHTML = groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+    memberGroupSelect.innerHTML = groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
 }
 
 async function addMember() {
     const body = {
         full_name: document.getElementById('m_name').value,
         phone: document.getElementById('m_phone').value,
-        period_type: document.getElementById('m_period').value
+        period_type: document.getElementById('m_period').value,
+        group_id: document.getElementById('m_group').value
     };
     const res = await fetch('/members', {
         method: 'POST',
@@ -190,7 +223,8 @@ async function addMember() {
 }
 
 async function loadRoundsTable() {
-    const res = await fetch('/members-rounds');
+    const groupId = document.getElementById('group_selector').value;
+    const res = await fetch('/members-rounds?group_id=' + groupId);
     if (!res.ok) return;
     const data = await res.json();
 
@@ -220,7 +254,10 @@ async function deleteMember(id) {
 
 (async () => {
     const ok = await checkAuth();
-    if (ok) loadRoundsTable();
+    if (ok) {
+        await loadGroupOptions();
+        loadRoundsTable();
+    }
 })();
 </script>
 </body>

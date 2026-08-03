@@ -63,29 +63,29 @@
             <div class="logo-text">EKUBE<span>MANAGEMENT SYSTEM</span></div>
         </div>
 
-        <div class="section-label">MAIN</div>
+    <div class="section-label">MAIN</div>
         <nav>
-            <a href="/index.html"><span class="icon">🏠</span> Dashboard</a>
-            <a href="/members.html"><span class="icon">👤</span> Members</a>
-            <a href="/payments.html" class="active"><span class="icon">💳</span> Payments</a>
-            <a href="/index.html"><span class="icon">📅</span> Daily Collection</a>
-            <a href="/index.html"><span class="icon">🗓️</span> Weekly Collection</a>
-            <a href="/index.html"><span class="icon">👥</span> Groups (Equb)</a>
-            <a href="/index.html"><span class="icon">📊</span> Reports</a>
-            <a href="/index.html"><span class="icon">📤</span> Export</a>
-        </nav>
+        <a href="/index.html"><span class="icon">🏠</span> Dashboard</a>
+        <a href="/members.html"><span class="icon">👤</span> Members</a>
+        <a href="/payments.html"><span class="icon">💳</span> Payments</a>
+        <a href="/daily-collection.html"><span class="icon">📅</span> Daily Collection</a>
+        <a href="/weekly-collection.html"><span class="icon">🗓️</span> Weekly Collection</a>
+        <a href="/groups.html"><span class="icon">👥</span> Groups (Equb)</a>
+        <a href="/reports.html"><span class="icon">📊</span> Reports</a>
+        <a href="/export.html"><span class="icon">📤</span> Export</a>
+    </nav>
 
-        <div class="section-label">OTHERS</div>
-        <nav>
-            <a href="#"><span class="icon">🔔</span> Notifications</a>
-            <a href="#"><span class="icon">⚙️</span> Settings</a>
-        </nav>
+    <div class="section-label">OTHERS</div>
+    <nav>
+        <a href="#"><span class="icon">🔔</span> Notifications</a>
+        <a href="/settings.html"><span class="icon">⚙️</span> Settings</a>
+    </nav>
     </div>
 
     <div class="main-content">
         <div class="topbar">
             <h1>Payments</h1>
-            <input class="search" placeholder="Search payments...">
+            <input class="search" id="search_box" placeholder="Search payments..." oninput="filterPayments()">
             <button onclick="logout()">Log Out</button>
         </div>
 
@@ -97,6 +97,7 @@
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
             </select>
+            <input id="p_date" type="date">
             <button onclick="addPayment()">Record Payment</button>
             <div id="p_msg" class="msg"></div>
         </div>
@@ -108,6 +109,18 @@
     </div>
 
 <script>
+function filterPayments() {
+    const query = document.getElementById('search_box').value.toLowerCase();
+    const rows = document.querySelectorAll('#recent_table tr');
+    rows.forEach((row, index) => {
+        if (index === 0) return;
+        const nameCell = row.cells[1];
+        if (!nameCell) return;
+        const name = nameCell.innerText.toLowerCase();
+        row.style.display = name.includes(query) ? '' : 'none';
+    });
+}
+
 async function checkAuth() {
     const res = await fetch('/me');
     if (!res.ok) {
@@ -126,7 +139,8 @@ async function addPayment() {
     const body = {
         member_id: Number(document.getElementById('p_member_id').value),
         amount: Number(document.getElementById('p_amount').value),
-        period_type: document.getElementById('p_period').value
+        period_type: document.getElementById('p_period').value,
+        paid_at: document.getElementById('p_date').value || undefined
     };
     const res = await fetch('/payments', {
         method: 'POST',
@@ -134,8 +148,14 @@ async function addPayment() {
         body: JSON.stringify(body)
     });
     const data = await res.json();
-    document.getElementById('p_msg').innerText = 'Payment recorded: ' + data.amount + ' for member ' + data.member_id;
-    loadRecent();
+    if (res.ok) {
+        document.getElementById('p_msg').style.color = 'green';
+        document.getElementById('p_msg').innerText = 'Payment recorded: ' + data.amount + ' for member ' + data.member_id;
+        loadRecent();
+    } else {
+        document.getElementById('p_msg').style.color = 'red';
+        document.getElementById('p_msg').innerText = data.error;
+    }
 }
 
 async function loadRecent() {
@@ -143,18 +163,50 @@ async function loadRecent() {
     if (!res.ok) return;
     const data = await res.json();
 
-    let html = '<tr><th>Member</th><th>Amount</th><th>Type</th><th>Time</th><th>Status</th></tr>';
+    let html = '<tr><th>ID</th><th>Member</th><th>Amount</th><th>Type</th><th>Time</th><th>Status</th><th>Action</th></tr>';
     data.forEach(p => {
         const time = new Date(p.paid_at).toLocaleString();
         html += `<tr>
+            <td>${p.member_id}</td>
             <td>${p.full_name}</td>
             <td>${Number(p.amount).toLocaleString()} Birr</td>
             <td>${p.period_type}</td>
             <td>${time}</td>
             <td><span class="status-paid">${p.status}</span></td>
+            <td>
+                <button onclick="editPayment(${p.id}, ${p.amount})" style="width:auto; padding:4px 10px; font-size:12px;">Edit</button>
+                <button onclick="deletePayment(${p.id})" style="width:auto; background:#d64545; padding:4px 10px; font-size:12px;">Delete</button>
+            </td>
         </tr>`;
     });
     document.getElementById('recent_table').innerHTML = html;
+}
+
+async function editPayment(id, currentAmount) {
+    const newAmount = prompt('Enter corrected amount:', currentAmount);
+    if (newAmount === null) return;
+    const res = await fetch('/payments/' + id, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ amount: Number(newAmount), period_type: 'daily' })
+    });
+    if (res.ok) {
+        loadRecent();
+    } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to update payment');
+    }
+}
+
+async function deletePayment(id) {
+    if (!confirm('Delete this payment record? This cannot be undone.')) return;
+    const res = await fetch('/payments/' + id, { method: 'DELETE' });
+    if (res.ok) {
+        loadRecent();
+    } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete payment');
+    }
 }
 
 (async () => {

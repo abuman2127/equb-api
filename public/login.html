@@ -1,75 +1,519 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Equb Manager - Login</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #1e2a3a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .login-box {
-            background: white;
-            padding: 32px;
-            border-radius: 10px;
-            width: 300px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        }
-        .login-box h2 { margin-top: 0; text-align: center; color: #1e2a3a; }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background: #2c7be5;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-        .error { color: red; font-size: 13px; margin-top: 8px; text-align: center; }
-    </style>
-</head>
-<body>
-    <div class="login-box">
-        <h2>Equb Manager</h2>
-        <input id="username" placeholder="Username">
-        <input id="password" type="password" placeholder="Password">
-        <button onclick="login()">Log In</button>
-        <div id="error" class="error"></div>
-    </div>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EKUBE Management System</title>
 
-<script>
-async function login() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    const res = await fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-    });
-    if (res.ok) {
-        window.location.href = '/index.html';
-    } else {
-        const data = await res.json();
-        document.getElementById('error').innerText = data.error || 'Login failed';
-    }
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
 }
 
-document.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') login();
+body{
+
+height:100vh;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+background:linear-gradient(-45deg,#0f172a,#1e293b,#0f172a,#1d4ed8);
+
+background-size:400% 400%;
+
+animation:bg 12s ease infinite;
+
+overflow:hidden;
+
+}
+
+@keyframes bg{
+
+0%{background-position:0% 50%;}
+50%{background-position:100% 50%;}
+100%{background-position:0% 50%;}
+
+}
+
+body::before{
+
+content:"";
+
+position:absolute;
+
+width:450px;
+height:450px;
+
+background:#2563eb;
+
+border-radius:50%;
+
+filter:blur(180px);
+
+top:-100px;
+left:-100px;
+
+opacity:.35;
+
+}
+
+body::after{
+
+content:"";
+
+position:absolute;
+
+width:400px;
+height:400px;
+
+background:#60a5fa;
+
+border-radius:50%;
+
+filter:blur(180px);
+
+bottom:-120px;
+right:-120px;
+
+opacity:.25;
+
+}
+
+.login{
+
+position:relative;
+
+width:420px;
+
+padding:45px;
+
+background:rgba(255,255,255,.08);
+
+border:1px solid rgba(255,255,255,.15);
+
+backdrop-filter:blur(20px);
+
+border-radius:24px;
+
+box-shadow:0 30px 80px rgba(0,0,0,.45);
+
+animation:fade .8s;
+
+}
+
+@keyframes fade{
+
+from{
+
+opacity:0;
+transform:translateY(40px);
+
+}
+
+to{
+
+opacity:1;
+transform:translateY(0);
+
+}
+
+}
+
+.logo{
+
+width:90px;
+height:90px;
+
+margin:auto;
+
+border-radius:50%;
+
+background:linear-gradient(135deg,#3b82f6,#2563eb);
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+box-shadow:0 15px 40px rgba(37,99,235,.45);
+
+}
+
+.logo svg{
+
+width:42px;
+fill:white;
+
+}
+
+h1{
+
+margin-top:20px;
+
+text-align:center;
+
+color:white;
+
+font-size:30px;
+
+}
+
+.subtitle{
+
+margin-top:8px;
+
+text-align:center;
+
+color:#b6c5db;
+
+font-size:14px;
+
+margin-bottom:35px;
+
+}
+
+.input{
+
+position:relative;
+
+margin-bottom:20px;
+
+}
+
+.input svg{
+
+position:absolute;
+
+top:15px;
+
+left:16px;
+
+width:18px;
+
+fill:#8ea5c9;
+
+}
+
+.input input{
+
+width:100%;
+
+padding:15px 50px;
+
+border-radius:14px;
+
+border:1px solid rgba(255,255,255,.15);
+
+background:rgba(255,255,255,.05);
+
+color:white;
+
+font-size:15px;
+
+transition:.3s;
+
+}
+
+.input input::placeholder{
+
+color:#9eb0c9;
+
+}
+
+.input input:focus{
+
+outline:none;
+
+border-color:#3b82f6;
+
+box-shadow:0 0 0 4px rgba(59,130,246,.25);
+
+}
+
+.eye{
+
+position:absolute;
+
+top:15px;
+
+right:18px;
+
+cursor:pointer;
+
+color:#9eb0c9;
+
+font-size:18px;
+
+}
+
+.options{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+margin-bottom:25px;
+
+font-size:14px;
+
+color:#d0d8e8;
+
+}
+
+.options a{
+
+color:#60a5fa;
+
+text-decoration:none;
+
+}
+
+button{
+
+width:100%;
+
+padding:15px;
+
+border:none;
+
+border-radius:14px;
+
+background:linear-gradient(135deg,#3b82f6,#2563eb);
+
+font-size:16px;
+
+font-weight:600;
+
+color:white;
+
+cursor:pointer;
+
+transition:.3s;
+
+box-shadow:0 15px 35px rgba(37,99,235,.35);
+
+}
+
+button:hover{
+
+transform:translateY(-2px);
+
+box-shadow:0 25px 40px rgba(37,99,235,.45);
+
+}
+
+button:disabled{
+
+opacity:.7;
+
+cursor:not-allowed;
+
+}
+
+#error{
+
+margin-top:18px;
+
+text-align:center;
+
+color:#ff8a8a;
+
+font-size:14px;
+
+min-height:18px;
+
+}
+
+.footer{
+
+margin-top:28px;
+
+text-align:center;
+
+font-size:13px;
+
+color:#b7c6dc;
+
+}
+
+@media(max-width:500px){
+
+.login{
+
+width:92%;
+
+padding:35px 25px;
+
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="login">
+
+<div class="logo">
+
+<svg viewBox="0 0 24 24">
+<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.96 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+</svg>
+
+</div>
+
+<h1>EKUBE</h1>
+
+<div class="subtitle">
+Management System
+</div>
+
+<div class="input">
+
+<svg viewBox="0 0 24 24">
+<path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
+</svg>
+
+<input
+id="username"
+placeholder="Username">
+
+</div>
+
+<div class="input">
+
+<svg viewBox="0 0 24 24">
+<path d="M12 17a2 2 0 100-4 2 2 0 000 4zm6-7h-1V7a5 5 0 00-10 0v3H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2zm-8-3a2 2 0 114 0v3h-4V7z"/>
+</svg>
+
+<input
+id="password"
+type="password"
+placeholder="Password">
+
+<span class="eye" onclick="togglePassword()">👁</span>
+
+</div>
+
+<div class="options">
+
+<label>
+
+<input type="checkbox">
+
+Remember me
+
+</label>
+
+<a href="#">Forgot password?</a>
+
+</div>
+
+<button id="btn" onclick="login()">
+
+Sign In
+
+</button>
+
+<div id="error"></div>
+
+<div class="footer">
+
+© 2026 EKUBE Management System
+
+</div>
+
+</div>
+
+<script>
+
+function togglePassword(){
+
+const p=document.getElementById("password");
+
+p.type=p.type==="password"?"text":"password";
+
+}
+
+async function login(){
+
+const username=document.getElementById("username").value.trim();
+
+const password=document.getElementById("password").value;
+
+const btn=document.getElementById("btn");
+
+const error=document.getElementById("error");
+
+error.innerHTML="";
+
+btn.disabled=true;
+
+btn.innerHTML="Signing In...";
+
+try{
+
+const res=await fetch("/login",{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify({
+
+username,
+
+password
+
+})
+
 });
+
+if(res.ok){
+
+window.location.href="/index.html";
+
+}else{
+
+const data=await res.json();
+
+error.innerHTML=data.error || "Invalid username or password.";
+
+}
+
+}catch{
+
+error.innerHTML="Unable to connect to the server.";
+
+}
+
+btn.disabled=false;
+
+btn.innerHTML="Sign In";
+
+}
+
+document.addEventListener("keypress",function(e){
+
+if(e.key==="Enter") login();
+
+});
+
 </script>
+
 </body>
 </html>

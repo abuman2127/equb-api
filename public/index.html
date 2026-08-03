@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Equb Manager</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -75,53 +76,11 @@
             margin-bottom: 24px;
         }
         .topbar h1 { margin: 0; font-size: 20px; color: #1a2332; }
-        .topbar .search {
-            flex: 1;
-            max-width: 400px;
-            margin: 0 20px;
-            padding: 8px 12px;
-            border: 1px solid #d5dae0;
-            border-radius: 6px;
-        }
         .topbar button { width: auto; background: #d64545; padding: 8px 16px; border: none; border-radius: 6px; color: white; cursor: pointer; }
 
-        h2 { margin-top: 40px; }
-        input, select, button { padding: 8px; margin: 4px 0; width: 100%; box-sizing: border-box; }
-        button { background: #2c7be5; color: white; border: none; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .msg { color: green; font-size: 14px; }
-
-        .grid-controls { display: flex; gap: 8px; }
-        .grid-controls input, .grid-controls button { width: auto; flex: 1; }
-
-        #g_table {
-            border-collapse: collapse;
-            font-family: Calibri, Arial, sans-serif;
-            font-size: 13px;
-        }
-        #g_table th, #g_table td {
-            border: 1px solid #d0d7de;
-            padding: 4px 10px;
-            text-align: right;
-            white-space: nowrap;
-        }
-        #g_table th {
-            background: #f0f2f5;
-            font-weight: bold;
-            text-align: center;
-        }
-        #g_table td:first-child, #g_table th:first-child {
-            text-align: left;
-            font-weight: bold;
-            background: #f0f2f5;
-        }
-        #g_table tr:nth-child(even) td { background: #fafbfc; }
-        #g_table tr:last-child td {
-            background: #d9e8fb;
-            font-weight: bold;
-            border-top: 2px solid #2c7be5;
-        }
+        .group-bar { margin-bottom:16px; }
+        .group-bar label { font-size:13px; color:#6b7280; margin-right:8px; }
+        .group-bar select { width:auto; display:inline-block; }
 
         .stat-cards {
             display: grid;
@@ -139,36 +98,21 @@
         .stat-card .label { font-size: 12px; color: #6b7280; text-transform: uppercase; }
         .stat-card .value { font-size: 22px; font-weight: bold; margin-top: 4px; color: #1e2a3a; }
 
-        .member-panel {
-            background: white;
-            border: 1px solid #e0e4e8;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 30px;
+        .dashboard-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 30px; }
+        .chart-panel, .calendar-panel {
+            background: white; border: 1px solid #e0e4e8; border-radius: 8px; padding: 16px;
         }
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .panel-header button {
-            background: #1e2a3a;
-            padding: 8px 16px;
-            width: auto;
-        }
-        #rounds_table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 12px;
-            font-size: 13px;
-        }
-        #rounds_table th, #rounds_table td {
-            border: 1px solid #e0e4e8;
-            padding: 6px 10px;
-            text-align: center;
-        }
-        #rounds_table th { background: #f0f2f5; }
-        #rounds_table td:first-child, #rounds_table th:first-child { text-align: left; font-weight: bold; }
+        .chart-panel h2, .calendar-panel h2 { margin-top: 0; }
+
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-size: 13px; }
+        .cal-grid .cal-head { font-weight: bold; color: #6b7280; padding: 4px 0; }
+        .cal-day { padding: 8px 0; border-radius: 6px; position: relative; }
+        .cal-day .dot { display: block; width: 6px; height: 6px; border-radius: 50%; margin: 2px auto 0; }
+        .dot-paid { background: #1b8a4a; }
+        .dot-partial { background: #d99a1b; }
+        .dot-not_paid { background: #b02a2a; }
+        .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .cal-nav button { width: auto; background: #eef2f7; color: #1a2332; padding: 4px 10px; }
     </style>
 </head>
 <body>
@@ -179,30 +123,36 @@
             <div class="logo-text">EKUBE<span>MANAGEMENT SYSTEM</span></div>
         </div>
 
-       <div class="section-label">MAIN</div>
-<nav>
-    <a href="#" class="active"><span class="icon">🏠</span> Dashboard</a>
-    <a href="/members.html"><span class="icon">👤</span> Members</a>
-    <a href="/payments.html"><span class="icon">💳</span> Payments</a>
-    <a href="/daily-collection.html"><span class="icon">📅</span> Daily Collection</a>
-    <a href="/weekly-collection.html"><span class="icon">🗓️</span> Weekly Collection</a>
-    <a href="/groups.html"><span class="icon">👥</span> Groups (Equb)</a>
-    <a href="/reports.html"><span class="icon">📊</span> Reports</a>
-    <a href="/export.html"><span class="icon">📤</span> Export</a>
-</nav>
+        <div class="section-label">MAIN</div>
+        <nav>
+            <a href="/index.html" class="active"><span class="icon">🏠</span> Dashboard</a>
+            <a href="/members.html"><span class="icon">👤</span> Members</a>
+            <a href="/payments.html"><span class="icon">💳</span> Payments</a>
+            <a href="/daily-collection.html"><span class="icon">📅</span> Daily Collection</a>
+            <a href="/weekly-collection.html"><span class="icon">🗓️</span> Weekly Collection</a>
+            <a href="/groups.html"><span class="icon">👥</span> Groups (Equb)</a>
+            <a href="/reports.html"><span class="icon">📊</span> Reports</a>
+            <a href="/export.html"><span class="icon">📤</span> Export</a>
+        </nav>
 
         <div class="section-label">OTHERS</div>
         <nav>
             <a href="#"><span class="icon">🔔</span> Notifications</a>
-            <a href="#"><span class="icon">⚙️</span> Settings</a>
+            <a href="/settings.html"><span class="icon">⚙️</span> Settings</a>
         </nav>
     </div>
 
     <div class="main-content">
         <div class="topbar">
             <h1>Dashboard</h1>
-            <input class="search" placeholder="Search members, payments...">
             <button onclick="logout()">Log Out</button>
+        </div>
+
+        <div class="group-bar">
+            <label>Viewing group:</label>
+            <select id="group_selector" onchange="onGroupChange()">
+                <option value="">All Groups</option>
+            </select>
         </div>
 
         <div class="stat-cards" id="stat_cards">
@@ -212,54 +162,28 @@
             <div class="stat-card"><div class="label">Active Fund</div><div class="value" id="stat_active">-</div></div>
         </div>
 
-        
-
-        <h2>Record Payment</h2>
-        <input id="p_member_id" placeholder="Member ID" type="number">
-        <input id="p_amount" placeholder="Amount" type="number">
-        <select id="p_period">
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-        </select>
-        <button onclick="addPayment()">Record Payment</button>
-        <div id="p_msg" class="msg"></div>
-
-        <h2 id="reports_heading">Reports</h2>
-        <div id="reports_section">
-            <select id="r_type">
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-            </select>
-            <input id="r_date" type="date">
-            <button onclick="getReport()">Get Report</button>
-            <table id="r_table"></table>
-
-            <h2>Payment Grid</h2>
-            <div class="grid-controls">
-                <input id="g_start" type="date">
-                <input id="g_end" type="date">
-                <button onclick="getGrid()">Load Grid</button>
+        <div class="dashboard-row">
+            <div class="chart-panel">
+                <h2>Collection Overview (Last 7 Days)</h2>
+                <canvas id="collection_chart" height="100"></canvas>
             </div>
-            <div style="overflow-x:auto; max-height: 500px; overflow-y:auto;">
-                <table id="g_table"></table>
+            <div class="calendar-panel">
+                <div class="cal-nav">
+                    <button onclick="changeMonth(-1)">&lt;</button>
+                    <strong id="cal_label"></strong>
+                    <button onclick="changeMonth(1)">&gt;</button>
+                </div>
+                <div class="cal-grid" id="cal_grid"></div>
             </div>
         </div>
     </div>
 
 <script>
-let currentRole = null;
 async function checkAuth() {
     const res = await fetch('/me');
     if (!res.ok) {
         window.location.href = '/login.html';
         return false;
-    }
-    const data = await res.json();
-    currentRole = data.role;
-    if (currentRole !== 'admin') {
-        document.getElementById('reports_section').style.display = 'none';
-        document.getElementById('reports_heading').style.display = 'none';
     }
     return true;
 }
@@ -269,8 +193,25 @@ async function logout() {
     window.location.href = '/login.html';
 }
 
+async function loadGroupOptions() {
+    const res = await fetch('/groups');
+    if (!res.ok) return;
+    const groups = await res.json();
+    const selector = document.getElementById('group_selector');
+    selector.innerHTML = '<option value="">All Groups</option>' +
+        groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+}
+
+function onGroupChange() {
+    loadStats();
+    loadCollectionChart();
+    loadCalendar();
+}
+
 async function loadStats() {
-    const res = await fetch('/dashboard-stats');
+    const groupId = document.getElementById('group_selector').value;
+    const url = groupId ? `/dashboard-stats?group_id=${groupId}` : '/dashboard-stats';
+    const res = await fetch(url);
     if (!res.ok) return;
     const data = await res.json();
     document.getElementById('stat_cycles').innerText = data.active_cycles;
@@ -279,137 +220,75 @@ async function loadStats() {
     document.getElementById('stat_active').innerText = data.active_fund.toLocaleString() + ' Birr';
 }
 
-function toggleAddMember() {
-    const form = document.getElementById('add_member_form');
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
-}
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth() + 1;
 
-async function addMember() {
-    const body = {
-        full_name: document.getElementById('m_name').value,
-        phone: document.getElementById('m_phone').value,
-        period_type: document.getElementById('m_period').value
-    };
-    const res = await fetch('/members', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(body)
-    });
-    const data = await res.json();
-    document.getElementById('m_msg').innerText = 'Added: ' + data.full_name + ' (ID: ' + data.id + ')';
-    loadStats();
-    loadRoundsTable();
-}
-
-async function addPayment() {
-    const body = {
-        member_id: Number(document.getElementById('p_member_id').value),
-        amount: Number(document.getElementById('p_amount').value),
-        period_type: document.getElementById('p_period').value
-    };
-    const res = await fetch('/payments', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(body)
-    });
-    const data = await res.json();
-    document.getElementById('p_msg').innerText = 'Payment recorded: ' + data.amount + ' for member ' + data.member_id;
-    loadStats();
-    loadRoundsTable();
-}
-
-async function getReport() {
-    const type = document.getElementById('r_type').value;
-    const dateVal = document.getElementById('r_date').value;
-    let url = '';
-    if (type === 'daily') {
-        url = '/reports/daily?date=' + dateVal;
-    } else if (type === 'weekly') {
-        const d = new Date(dateVal);
-        const year = d.getFullYear();
-        const jan1 = new Date(year, 0, 1);
-        const week = Math.ceil((((d - jan1) / 86400000) + jan1.getDay() + 1) / 7);
-        url = '/reports/weekly?year=' + year + '&week=' + week;
-    } else {
-        const d = new Date(dateVal);
-        url = '/reports/monthly?year=' + d.getFullYear() + '&month=' + (d.getMonth() + 1);
-    }
-    const res = await fetch(url);
-    const data = await res.json();
-    let html = '<tr><th>Name</th><th>Total</th><th>Payments</th></tr>';
-    data.forEach(row => {
-        html += '<tr><td>' + row.full_name + '</td><td>' + row.total + '</td><td>' + row.payment_count + '</td></tr>';
-    });
-    document.getElementById('r_table').innerHTML = html;
-}
-
-async function getGrid() {
-    const start = document.getElementById('g_start').value;
-    const end = document.getElementById('g_end').value;
-    const res = await fetch(`/reports/grid?start_date=${start}&end_date=${end}`);
-    const data = await res.json();
-
-    const dates = [];
-    let d = new Date(start);
-    const endD = new Date(end);
-    while (d <= endD) {
-        dates.push(d.toISOString().split('T')[0]);
-        d.setDate(d.getDate() + 1);
-    }
-
-    let html = '<tr><th>Name</th>' + dates.map(dt => `<th>${dt}</th>`).join('') + '</tr>';
-    const totals = {};
-    dates.forEach(dt => totals[dt] = 0);
-
-    data.members.forEach(m => {
-        html += `<tr><td>${m.full_name}</td>`;
-        dates.forEach(dt => {
-            const amt = (data.payments[m.id] && data.payments[m.id][dt]) || 0;
-            totals[dt] += amt;
-            html += `<td>${amt}</td>`;
-        });
-        html += '</tr>';
-    });
-
-    html += '<tr><td>Total</td>' + dates.map(dt => `<td>${totals[dt]}</td>`).join('') + '</tr>';
-    document.getElementById('g_table').innerHTML = html;
-}
-
-async function loadRoundsTable() {
-    const res = await fetch('/members-rounds');
+async function loadCollectionChart() {
+    const res = await fetch('/collection-overview');
     if (!res.ok) return;
     const data = await res.json();
 
-    let html = '<tr><th>ID</th><th>Member</th>' + data.rounds.map(r => `<th>${r}</th>`).join('') + '<th>Action</th></tr>';
-    data.members.forEach(m => {
-        html += `<tr><td>${m.id}</td><td>${m.full_name}</td>`;
-        data.rounds.forEach(r => {
-            const amt = (data.payments[m.id] && data.payments[m.id][r]) || 0;
-            html += amt > 0 ? `<td>${amt}</td>` : `<td>-</td>`;
-        });
-        html += `<td><button onclick="deleteMember(${m.id})" style="width:auto; background:#d64545; padding:4px 10px; font-size:12px;">Remove</button></td>`;
-        html += '</tr>';
+    const labels = data.map(d => d.date.slice(5));
+    const totals = data.map(d => d.total);
+
+    new Chart(document.getElementById('collection_chart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Collected',
+                data: totals,
+                borderColor: '#2c7be5',
+                backgroundColor: 'rgba(44,123,229,0.1)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
     });
-    document.getElementById('rounds_table').innerHTML = html;
 }
 
-async function deleteMember(id) {
-    if (!confirm('Remove this member? Their payment history will be kept.')) return;
-    const res = await fetch('/members/' + id, { method: 'DELETE' });
-    if (res.ok) {
-        loadStats();
-        loadRoundsTable();
-    } else {
-        const data = await res.json();
-        alert(data.error || 'Failed to remove member');
+async function loadCalendar() {
+    const res = await fetch(`/payment-calendar?year=${calYear}&month=${calMonth}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('cal_label').innerText = `${monthNames[calMonth - 1]} ${calYear}`;
+
+    const firstDay = new Date(calYear, calMonth - 1, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth, 0).getDate();
+
+    let html = '';
+    ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d => html += `<div class="cal-head">${d}</div>`);
+    for (let i = 0; i < firstDay; i++) html += '<div></div>';
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const key = `${calYear}-${String(calMonth).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const status = data.days[key];
+        const dot = status ? `<span class="dot dot-${status}"></span>` : '';
+        html += `<div class="cal-day">${day}${dot}</div>`;
     }
+    document.getElementById('cal_grid').innerHTML = html;
+}
+
+function changeMonth(delta) {
+    calMonth += delta;
+    if (calMonth > 12) { calMonth = 1; calYear++; }
+    if (calMonth < 1) { calMonth = 12; calYear--; }
+    loadCalendar();
 }
 
 (async () => {
     const ok = await checkAuth();
     if (ok) {
+        await loadGroupOptions();
         loadStats();
-        loadRoundsTable();
+        loadCollectionChart();
+        loadCalendar();
     }
 })();
 </script>

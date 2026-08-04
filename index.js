@@ -1,3 +1,5 @@
+const path = require('path');const path = require('path');
+
 require('dotenv').config();
 const express = require('express');
 const { Pool } = require('pg');
@@ -49,7 +51,7 @@ function requireAdmin(req, res, next) {
 
 // ---- Basic ----
 app.get('/', (req, res) => {
-    res.send('Equb API is running');
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 app.get('/test-db', async (req, res) => {

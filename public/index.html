@@ -7,12 +7,29 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+        :root {
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --text: #1a2332;
+            --text-muted: #6b7280;
+            --border: #e0e4e8;
+        }
+        body.dark {
+            --bg: #12161f;
+            --card-bg: #1a2332;
+            --text: #e5e9f0;
+            --text-muted: #9aa4b8;
+            --border: #2a3547;
+        }
+
         * { box-sizing: border-box; }
         body {
             font-family: 'Inter', Arial, sans-serif;
             margin: 0;
-            background: #f4f6f9;
+            background: var(--bg);
+            color: var(--text);
             display: flex;
+            transition: background 0.2s, color 0.2s;
         }
 
         .sidebar {
@@ -78,11 +95,14 @@
             align-items: center;
             margin-bottom: 20px;
         }
-        .topbar h1 { margin: 0; font-size: 20px; font-weight: 700; color: #1a2332; }
+        .topbar h1 { margin: 0; font-size: 20px; font-weight: 700; color: var(--text); }
         .topbar button {
-            border: none; border-radius: 6px; color: white; cursor: pointer;
-            background: #d64545; padding: 8px 16px; font-family: inherit; font-size: 14px;
+            border: none; border-radius: 6px; cursor: pointer;
+            padding: 8px 16px; font-family: inherit; font-size: 14px;
         }
+        .topbar .logout-btn { background: #d64545; color: white; }
+        .topbar .dark-btn { background: #eef2f7; color: #1a2332; }
+        body.dark .topbar .dark-btn { background: #2a3547; color: #e5e9f0; }
 
         .welcome-banner {
             background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
@@ -115,7 +135,7 @@
             margin-bottom: 20px;
         }
         .stat-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 12px;
             padding: 18px;
             box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -132,28 +152,28 @@
         .stat-icon.green { background: #e7f7ee; color: #1b8a4a; }
         .stat-icon.purple { background: #f2e9fe; color: #7c3aed; }
         .stat-icon.orange { background: #fef3e2; color: #d97706; }
-        .stat-card .label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.3px; }
-        .stat-card .value { font-size: 22px; font-weight: 700; margin-top: 2px; color: #1a2332; }
+        .stat-card .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; }
+        .stat-card .value { font-size: 22px; font-weight: 700; margin-top: 2px; color: var(--text); }
 
         .dashboard-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; }
         .chart-panel, .calendar-panel {
-            background: white; border-radius: 12px; padding: 18px;
+            background: var(--card-bg); border-radius: 12px; padding: 18px;
             box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
         }
-        .chart-panel h2, .calendar-panel h2 { margin-top: 0; font-size: 15px; font-weight: 600; color: #1a2332; }
+        .chart-panel h2, .calendar-panel h2 { margin-top: 0; font-size: 15px; font-weight: 600; color: var(--text); }
         .chart-panel h2 i, .calendar-panel h2 i { color: #2563eb; margin-right: 6px; }
 
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; font-size: 13px; }
-        .cal-grid .cal-head { font-weight: 600; color: #6b7280; padding: 4px 0; }
-        .cal-day { padding: 8px 0; border-radius: 6px; position: relative; }
+        .cal-grid .cal-head { font-weight: 600; color: var(--text-muted); padding: 4px 0; }
+        .cal-day { padding: 8px 0; border-radius: 6px; position: relative; color: var(--text); }
         .cal-day .dot { display: block; width: 6px; height: 6px; border-radius: 50%; margin: 2px auto 0; }
         .dot-paid { background: #1b8a4a; }
         .dot-partial { background: #d99a1b; }
         .dot-not_paid { background: #b02a2a; }
-        .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; color: var(--text); }
         .cal-nav button { width: auto; background: #eef2f7; color: #1a2332; padding: 4px 10px; border: none; border-radius: 6px; cursor: pointer; }
 
-        .quick-actions h2 { font-size: 15px; font-weight: 600; color: #1a2332; margin: 0 0 12px; }
+        .quick-actions h2 { font-size: 15px; font-weight: 600; color: var(--text); margin: 0 0 12px; }
         .quick-actions h2 i { color: #d97706; margin-right: 6px; }
         .quick-grid {
             display: grid;
@@ -161,9 +181,9 @@
             gap: 12px;
         }
         .quick-card {
-            background: white; border-radius: 12px; padding: 16px;
+            background: var(--card-bg); border-radius: 12px; padding: 16px;
             box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            text-decoration: none; color: #1a2332;
+            text-decoration: none; color: var(--text);
             display: flex; align-items: center; gap: 12px;
         }
         .quick-card i { font-size: 20px; color: #2563eb; width: 24px; text-align: center; }
@@ -201,7 +221,10 @@
     <div class="main-content">
         <div class="topbar">
             <h1>Dashboard</h1>
-            <button onclick="logout()">Log Out</button>
+            <div style="display:flex; gap:8px;">
+                <button class="dark-btn" onclick="toggleDarkMode()" id="dark_toggle">🌙 Dark Mode</button>
+                <button class="logout-btn" onclick="logout()">Log Out</button>
+            </div>
         </div>
 
         <div class="welcome-banner">
@@ -272,6 +295,20 @@
     </div>
 
 <script>
+function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark);
+    document.getElementById('dark_toggle').innerText = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
+
+function loadDarkModePreference() {
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark');
+        document.getElementById('dark_toggle').innerText = '☀️ Light Mode';
+    }
+}
+
 async function checkAuth() {
     const res = await fetch('/me');
     if (!res.ok) {
@@ -372,6 +409,7 @@ function changeMonth(delta) {
 }
 
 (async () => {
+    loadDarkModePreference();
     const ok = await checkAuth();
     if (ok) {
         await loadGroupOptions();

@@ -22,11 +22,14 @@ app.use(session({
     cookie: { maxAge: 1000 * 60 * 60 * 8 } // 8 hour session
 }));
 app.use(express.static('public'));
-console.log("DB_HOST:", process.env.DB_HOST);
-console.log("DB_PORT:", process.env.DB_PORT);
-console.log("DB_NAME:", process.env.DB_NAME);
-console.log("DB_USER:", process.env.DB_USER);
-console.log("DB_PASSWORD exists:", !!process.env.DB_PASSWORD);
+console.log({
+    DB_HOST: process.env.DB_HOST,
+    DB_PORT: process.env.DB_PORT,
+    DB_NAME: process.env.DB_NAME,
+    DB_USER: process.env.DB_USER,
+    DB_PASSWORD_EXISTS: !!process.env.DB_PASSWORD,
+    DB_PASSWORD_LENGTH: process.env.DB_PASSWORD ? process.env.DB_PASSWORD.length : 0
+});
 
 const pool = new Pool({
     user: process.env.DB_USER,

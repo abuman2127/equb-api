@@ -3,8 +3,38 @@
 <head>
     <title>Reports - Equb Manager</title>
     <style>
+        :root {
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --text: #1a2332;
+            --text-muted: #6b7280;
+            --border: #e0e4e8;
+            --tab-bg: #e6e9ee;
+            --table-header-bg: #f0f2f5;
+            --total-row-bg: #d9e8fb;
+            --total-row-text: #1a2332;
+        }
+        body.dark {
+            --bg: #12161f;
+            --card-bg: #1a2332;
+            --text: #e5e9f0;
+            --text-muted: #9aa4b8;
+            --border: #2a3547;
+            --tab-bg: #2a3547;
+            --table-header-bg: #243044;
+            --total-row-bg: #1e3a5f;
+            --total-row-text: #ffffff;
+        }
+
         * { box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f9; display: flex; }
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            background: var(--bg); 
+            color: var(--text);
+            display: flex; 
+            transition: background 0.2s, color 0.2s;
+        }
 
         .sidebar {
             width: 220px; background: #1a2332; color: white; height: 100vh;
@@ -30,32 +60,46 @@
         .main-content { margin-left: 220px; padding: 24px; width: 100%; }
 
         .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .topbar h1 { margin: 0; font-size: 20px; color: #1a2332; }
+        .topbar h1 { margin: 0; font-size: 20px; color: var(--text); }
         .topbar button {
             width: auto; background: #d64545; padding: 8px 16px; border: none;
             border-radius: 6px; color: white; cursor: pointer;
         }
 
-        input, select, button { padding: 8px; margin: 4px 0; box-sizing: border-box; }
+        input, select, button { 
+            padding: 8px; 
+            margin: 4px 0; 
+            box-sizing: border-box; 
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--card-bg);
+            color: var(--text);
+        }
         button { background: #2c7be5; color: white; border: none; cursor: pointer; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        td, th { border: 1px solid var(--border); padding: 8px; text-align: left; color: var(--text); }
 
-        .panel { background: white; border: 1px solid #e0e4e8; border-radius: 8px; padding: 16px; margin-bottom: 30px; }
+        .panel { 
+            background: var(--card-bg); 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            padding: 16px; 
+            margin-bottom: 30px; 
+        }
         .panel h2 { margin-top: 0; }
 
         .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-        .tabs button { width: auto; background: #e6e9ee; color: #1a2332; padding: 8px 16px; }
+        .tabs button { width: auto; background: var(--tab-bg); color: var(--text); padding: 8px 16px; }
         .tabs button.active { background: #2c7be5; color: white; }
 
         .controls { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
         .controls input, .controls select { width: auto; }
 
         #g_table { border-collapse: collapse; font-family: Calibri, Arial, sans-serif; font-size: 13px; }
-        #g_table th, #g_table td { border: 1px solid #d0d7de; padding: 4px 10px; text-align: right; white-space: nowrap; }
-        #g_table th { background: #f0f2f5; font-weight: bold; text-align: center; }
-        #g_table td:first-child, #g_table th:first-child { text-align: left; font-weight: bold; background: #f0f2f5; }
-        #g_table tr:last-child td { background: #d9e8fb; font-weight: bold; border-top: 2px solid #2c7be5; }
+        #g_table th, #g_table td { border: 1px solid var(--border); padding: 4px 10px; text-align: right; white-space: nowrap; color: var(--text); }
+        #g_table th { background: var(--table-header-bg); font-weight: bold; text-align: center; }
+        #g_table td:first-child, #g_table th:first-child { text-align: left; font-weight: bold; background: var(--table-header-bg); }
+        #g_table tr:last-child td { background: var(--total-row-bg); color: var(--total-row-text); font-weight: bold; border-top: 2px solid #2c7be5; }
     </style>
 </head>
 <body>
@@ -66,7 +110,7 @@
             <div class="logo-text">EKUBE<span>MANAGEMENT SYSTEM</span></div>
         </div>
 
-    <div class="section-label">MAIN</div>
+        <div class="section-label">MAIN</div>
         <nav>
             <a href="/index.html"><span class="icon">🏠</span> Dashboard</a>
             <a href="/members.html"><span class="icon">👤</span> Members</a>
@@ -74,7 +118,7 @@
             <a href="/daily-collection.html"><span class="icon">📅</span> Daily Collection</a>
             <a href="/weekly-collection.html"><span class="icon">🗓️</span> Weekly Collection</a>
             <a href="/groups.html"><span class="icon">👥</span> Groups (Equb)</a>
-            <a href="/reports.html"><span class="icon">📊</span> Reports</a>
+            <a href="/reports.html" class="active"><span class="icon">📊</span> Reports</a>
             <a href="/export.html"><span class="icon">📤</span> Export</a>
         </nav>
 
@@ -127,6 +171,12 @@
     </div>
 
 <script>
+function loadDarkModePreference() {
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark');
+    }
+}
+
 async function checkAuth() {
     const res = await fetch('/me');
     if (!res.ok) {
@@ -220,6 +270,7 @@ async function getGrid() {
 }
 
 (async () => {
+    loadDarkModePreference();
     await checkAuth();
     document.getElementById('daily_date').value = new Date().toISOString().split('T')[0];
 })();

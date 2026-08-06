@@ -3,8 +3,30 @@
 <head>
     <title>Export - Equb Manager</title>
     <style>
+        :root {
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --text: #1a2332;
+            --text-muted: #6b7280;
+            --border: #e0e4e8;
+        }
+        body.dark {
+            --bg: #12161f;
+            --card-bg: #1a2332;
+            --text: #e5e9f0;
+            --text-muted: #9aa4b8;
+            --border: #2a3547;
+        }
+
         * { box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f9; display: flex; }
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            background: var(--bg); 
+            color: var(--text);
+            display: flex; 
+            transition: background 0.2s, color 0.2s;
+        }
 
         .sidebar {
             width: 220px; background: #1a2332; color: white; height: 100vh;
@@ -30,7 +52,7 @@
         .main-content { margin-left: 220px; padding: 24px; width: 100%; }
 
         .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .topbar h1 { margin: 0; font-size: 20px; color: #1a2332; }
+        .topbar h1 { margin: 0; font-size: 20px; color: var(--text); }
         .topbar button {
             width: auto; background: #d64545; padding: 8px 16px; border: none;
             border-radius: 6px; color: white; cursor: pointer;
@@ -38,17 +60,29 @@
 
         .export-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
         .export-card {
-            background: white; border: 1px solid #e0e4e8; border-radius: 8px;
-            padding: 20px; text-align: center;
+            background: var(--card-bg); 
+            border: 1px solid var(--border); 
+            border-radius: 8px;
+            padding: 20px; 
+            text-align: center;
         }
         .export-card .icon { font-size: 32px; margin-bottom: 10px; }
-        .export-card h3 { margin: 0 0 6px; color: #1a2332; }
-        .export-card p { font-size: 13px; color: #6b7280; margin: 0 0 16px; }
+        .export-card h3 { margin: 0 0 6px; color: var(--text); }
+        .export-card p { font-size: 13px; color: var(--text-muted); margin: 0 0 16px; }
         .export-card a {
             display: inline-block; background: #1b8a4a; color: white; text-decoration: none;
             padding: 10px 20px; border-radius: 6px; font-size: 14px;
         }
         .export-card a:hover { background: #157038; }
+
+        /* Style inputs inside the export card for dark mode */
+        input[type="date"] {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color-scheme: dark; /* Helps standard browser date pickers adapt */
+        }
     </style>
 </head>
 <body>
@@ -59,7 +93,7 @@
             <div class="logo-text">EKUBE<span>MANAGEMENT SYSTEM</span></div>
         </div>
 
-    <div class="section-label">MAIN</div>
+        <div class="section-label">MAIN</div>
         <nav>
             <a href="/index.html"><span class="icon">🏠</span> Dashboard</a>
             <a href="/members.html"><span class="icon">👤</span> Members</a>
@@ -68,7 +102,7 @@
             <a href="/weekly-collection.html"><span class="icon">🗓️</span> Weekly Collection</a>
             <a href="/groups.html"><span class="icon">👥</span> Groups (Equb)</a>
             <a href="/reports.html"><span class="icon">📊</span> Reports</a>
-            <a href="/export.html"><span class="icon">📤</span> Export</a>
+            <a href="/export.html" class="active"><span class="icon">📤</span> Export</a>
         </nav>
 
         <div class="section-label">OTHERS</div>
@@ -97,12 +131,18 @@
             <p>Export payments for a date range</p>
             <input type="date" id="exp_start" style="width:100%; margin-bottom:6px; padding:6px;">
             <input type="date" id="exp_end" style="width:100%; margin-bottom:10px; padding:6px;">
-            <button onclick="exportPayments()" style="background:#1b8a4a; width:100%;">Download .xlsx</button>
+            <button onclick="exportPayments()" style="background:#1b8a4a; width:100%; padding:10px; color:white; border:none; border-radius:6px; cursor:pointer; font-size:14px;">Download .xlsx</button>
         </div>
         </div>
     </div>
 
 <script>
+function loadDarkModePreference() {
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark');
+    }
+}
+
 async function checkAuth() {
     const res = await fetch('/me');
     if (!res.ok) {
@@ -131,6 +171,8 @@ function exportPayments() {
     }
     window.location.href = `/export/payments?start_date=${start}&end_date=${end}`;
 }
+
+loadDarkModePreference();
 checkAuth();
 </script>
 </body>

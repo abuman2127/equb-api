@@ -3,8 +3,30 @@
 <head>
     <title>Daily Collection - Equb Manager</title>
     <style>
+        :root {
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --text: #1a2332;
+            --text-muted: #6b7280;
+            --border: #e0e4e8;
+        }
+        body.dark {
+            --bg: #12161f;
+            --card-bg: #1a2332;
+            --text: #e5e9f0;
+            --text-muted: #9aa4b8;
+            --border: #2a3547;
+        }
+
         * { box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f9; display: flex; }
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            background: var(--bg); 
+            color: var(--text);
+            display: flex; 
+            transition: background 0.2s, color 0.2s;
+        }
 
         .sidebar {
             width: 220px; background: #1a2332; color: white; height: 100vh;
@@ -30,22 +52,40 @@
         .main-content { margin-left: 220px; padding: 24px; width: 100%; }
 
         .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .topbar h1 { margin: 0; font-size: 20px; color: #1a2332; }
-        .topbar input[type="date"] { padding: 8px 12px; border: 1px solid #d5dae0; border-radius: 6px; }
+        .topbar h1 { margin: 0; font-size: 20px; color: var(--text); }
+        .topbar input[type="date"] { 
+            padding: 8px 12px; 
+            border: 1px solid var(--border); 
+            border-radius: 6px;
+            background: var(--card-bg);
+            color: var(--text);
+        }
         .topbar button {
             width: auto; background: #d64545; padding: 8px 16px; border: none;
             border-radius: 6px; color: white; cursor: pointer;
         }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        td, th { border: 1px solid var(--border); padding: 8px; text-align: left; color: var(--text); }
 
         .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 30px; }
-        .stat-card { background: white; border: 1px solid #e0e4e8; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .stat-card .label { font-size: 12px; color: #6b7280; text-transform: uppercase; }
-        .stat-card .value { font-size: 22px; font-weight: bold; margin-top: 4px; color: #1e2a3a; }
+        .stat-card { 
+            background: var(--card-bg); 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            padding: 16px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+        }
+        .stat-card .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+        .stat-card .value { font-size: 22px; font-weight: bold; margin-top: 4px; color: var(--text); }
 
-        .panel { background: white; border: 1px solid #e0e4e8; border-radius: 8px; padding: 16px; margin-bottom: 30px; }
+        .panel { 
+            background: var(--card-bg); 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            padding: 16px; 
+            margin-bottom: 30px; 
+        }
         .panel h2 { margin-top: 0; }
 
         .badge-paid { color: #1b8a4a; background: #e6f7ec; padding: 3px 10px; border-radius: 12px; font-size: 12px; }
@@ -60,25 +100,22 @@
             <div class="logo-text">EKUBE<span>MANAGEMENT SYSTEM</span></div>
         </div>
 
-            <div class="section-label">MAIN</div>
-    <nav>
-        <a href="/index.html"><span class="icon">🏠</span> Dashboard</a>
-        <a href="/members.html"><span class="icon">👤</span> Members</a>
-        <a href="/payments.html"><span class="icon">💳</span> Payments</a>
-        <a href="/daily-collection.html"><span class="icon">📅</span> Daily Collection</a>
-        <a href="/weekly-collection.html"><span class="icon">🗓️</span> Weekly Collection</a>
-        <a href="/groups.html"><span class="icon">👥</span> Groups (Equb)</a>
-        <a href="/reports.html"><span class="icon">📊</span> Reports</a>
-        <a href="/export.html"><span class="icon">📤</span> Export</a>
-    </nav>
+        <div class="section-label">MAIN</div>
+        <nav>
+            <a href="/index.html"><span class="icon">🏠</span> Dashboard</a>
+            <a href="/members.html"><span class="icon">👤</span> Members</a>
+            <a href="/payments.html"><span class="icon">💳</span> Payments</a>
+            <a href="/daily-collection.html" class="active"><span class="icon">📅</span> Daily Collection</a>
+            <a href="/weekly-collection.html"><span class="icon">🗓️</span> Weekly Collection</a>
+            <a href="/groups.html"><span class="icon">👥</span> Groups (Equb)</a>
+            <a href="/reports.html"><span class="icon">📊</span> Reports</a>
+            <a href="/export.html"><span class="icon">📤</span> Export</a>
+        </nav>
 
-    <div class="section-label">OTHERS</div>
-    <nav>
-        <a href="#"><span class="icon">🔔</span> Notifications</a>
-        <a href="/settings.html"><span class="icon">⚙️</span> Settings</a>
-    </nav>
+        <div class="section-label">OTHERS</div>
+        <nav>
             <a href="#"><span class="icon">🔔</span> Notifications</a>
-            <a href="#"><span class="icon">⚙️</span> Settings</a>
+            <a href="/settings.html"><span class="icon">⚙️</span> Settings</a>
         </nav>
     </div>
 
@@ -102,6 +139,12 @@
     </div>
 
 <script>
+function loadDarkModePreference() {
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark');
+    }
+}
+
 async function checkAuth() {
     const res = await fetch('/me');
     if (!res.ok) {
@@ -146,6 +189,7 @@ async function loadCollection() {
 document.getElementById('date_picker').addEventListener('change', loadCollection);
 
 (async () => {
+    loadDarkModePreference();
     const ok = await checkAuth();
     if (ok) {
         document.getElementById('date_picker').value = new Date().toISOString().split('T')[0];

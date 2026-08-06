@@ -3,8 +3,30 @@
 <head>
     <title>Groups - Equb Manager</title>
     <style>
+        :root {
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --text: #1a2332;
+            --text-muted: #6b7280;
+            --border: #e0e4e8;
+        }
+        body.dark {
+            --bg: #12161f;
+            --card-bg: #1a2332;
+            --text: #e5e9f0;
+            --text-muted: #9aa4b8;
+            --border: #2a3547;
+        }
+
         * { box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; margin: 0; background: #f4f6f9; display: flex; }
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            background: var(--bg); 
+            color: var(--text);
+            display: flex; 
+            transition: background 0.2s, color 0.2s;
+        }
 
         .sidebar {
             width: 220px; background: #1a2332; color: white; height: 100vh;
@@ -30,23 +52,37 @@
         .main-content { margin-left: 220px; padding: 24px; width: 100%; }
 
         .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .topbar h1 { margin: 0; font-size: 20px; color: #1a2332; }
+        .topbar h1 { margin: 0; font-size: 20px; color: var(--text); }
         .topbar button {
             width: auto; background: #d64545; padding: 8px 16px; border: none;
             border-radius: 6px; color: white; cursor: pointer;
         }
 
-        input, select, button { padding: 8px; margin: 4px 0; box-sizing: border-box; }
+        input, select, button { 
+            padding: 8px; 
+            margin: 4px 0; 
+            box-sizing: border-box; 
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--card-bg);
+            color: var(--text);
+        }
         button { background: #2c7be5; color: white; border: none; cursor: pointer; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .msg { color: green; font-size: 14px; }
+        td, th { border: 1px solid var(--border); padding: 8px; text-align: left; color: var(--text); }
+        .msg { color: #1b8a4a; font-size: 14px; }
 
-        .panel { background: white; border: 1px solid #e0e4e8; border-radius: 8px; padding: 16px; margin-bottom: 30px; }
+        .panel { 
+            background: var(--card-bg); 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            padding: 16px; 
+            margin-bottom: 30px; 
+        }
         .panel-header { display: flex; justify-content: space-between; align-items: center; }
-        .panel-header button { background: #1e2a3a; padding: 8px 16px; width: auto; }
+        .panel-header button { background: #1e2a3a; padding: 8px 16px; width: auto; color: white; }
 
-        .badge { background: #eef2f7; color: #1a2332; padding: 3px 10px; border-radius: 12px; font-size: 12px; }
+        .badge { background: rgba(128,128,128,0.15); color: var(--text); padding: 3px 10px; border-radius: 12px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -57,14 +93,14 @@
             <div class="logo-text">EKUBE<span>MANAGEMENT SYSTEM</span></div>
         </div>
 
-    <div class="section-label">MAIN</div>
+        <div class="section-label">MAIN</div>
         <nav>
             <a href="/index.html"><span class="icon">🏠</span> Dashboard</a>
             <a href="/members.html"><span class="icon">👤</span> Members</a>
             <a href="/payments.html"><span class="icon">💳</span> Payments</a>
             <a href="/daily-collection.html"><span class="icon">📅</span> Daily Collection</a>
             <a href="/weekly-collection.html"><span class="icon">🗓️</span> Weekly Collection</a>
-            <a href="/groups.html"><span class="icon">👥</span> Groups (Equb)</a>
+            <a href="/groups.html" class="active"><span class="icon">👥</span> Groups (Equb)</a>
             <a href="/reports.html"><span class="icon">📊</span> Reports</a>
             <a href="/export.html"><span class="icon">📤</span> Export</a>
         </nav>
@@ -104,6 +140,12 @@
     </div>
 
 <script>
+function loadDarkModePreference() {
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark');
+    }
+}
+
 async function checkAuth() {
     const res = await fetch('/me');
     if (!res.ok) {
@@ -154,40 +196,41 @@ async function deleteGroup(id) {
     }
 }
 
-    async function loadGroups() {
-        const res = await fetch('/groups');
-        if (!res.ok) return;
-        const data = await res.json();
+async function loadGroups() {
+    const res = await fetch('/groups');
+    if (!res.ok) return;
+    const data = await res.json();
 
-        let html = '<tr><th>Name</th><th>Type</th><th>Members</th><th>Note</th><th>Action</th></tr>';
-        data.forEach(g => {
-            html += `<tr>
-                <td>${g.name}</td>
-                <td><span class="badge">${g.period_type}</span></td>
-                <td>${g.member_count}</td>
-                <td>${g.contribution_note || '-'}</td>
-                <td>
-                    <button onclick="selectWinner(${g.id})" style="width:auto; background:#1b8a4a; padding:4px 10px; font-size:12px;">Select Winner</button>
-                    <button onclick="deleteGroup(${g.id})" style="width:auto; background:#d64545; padding:4px 10px; font-size:12px;">Remove</button>
-                </td>
-            </tr>`;
-        });
-        document.getElementById('groups_table').innerHTML = html;
-    }
+    let html = '<tr><th>Name</th><th>Type</th><th>Members</th><th>Note</th><th>Action</th></tr>';
+    data.forEach(g => {
+        html += `<tr>
+            <td>${g.name}</td>
+            <td><span class="badge">${g.period_type}</span></td>
+            <td>${g.member_count}</td>
+            <td>${g.contribution_note || '-'}</td>
+            <td>
+                <button onclick="selectWinner(${g.id})" style="width:auto; background:#1b8a4a; padding:4px 10px; font-size:12px;">Select Winner</button>
+                <button onclick="deleteGroup(${g.id})" style="width:auto; background:#d64545; padding:4px 10px; font-size:12px;">Remove</button>
+            </td>
+        </tr>`;
+    });
+    document.getElementById('groups_table').innerHTML = html;
+}
 
-    async function selectWinner(groupId) {
-        if (!confirm('Randomly select this round\'s winner?')) return;
-        const res = await fetch(`/groups/${groupId}/select-winner`, { method: 'POST' });
-        const data = await res.json();
-        if (res.ok) {
-            alert(`🎉 Winner: ${data.winner}\nRound ${data.round}\nAmount: ${Number(data.amount).toLocaleString()} Birr`);
-            loadGroups();
-        } else {
-            alert(data.error || 'Failed to select winner');
-        }
+async function selectWinner(groupId) {
+    if (!confirm('Randomly select this round\'s winner?')) return;
+    const res = await fetch(`/groups/${groupId}/select-winner`, { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) {
+        alert(`🎉 Winner: ${data.winner}\nRound ${data.round}\nAmount: ${Number(data.amount).toLocaleString()} Birr`);
+        loadGroups();
+    } else {
+        alert(data.error || 'Failed to select winner');
     }
+}
 
 (async () => {
+    loadDarkModePreference();
     const ok = await checkAuth();
     if (ok) loadGroups();
 })();

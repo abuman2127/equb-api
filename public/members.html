@@ -255,7 +255,7 @@ async function loadRoundsTable() {
 
     let html = '<tr><th>ID</th><th>Member</th>' + data.rounds.map(r => `<th>${r}</th>`).join('') + '<th>Action</th></tr>';
     data.members.forEach(m => {
-        html += `<tr><td>${m.group_member_no || '-'}</td><td>${m.full_name}</td>`;
+        html += `<tr><td>${m.id}</td><td>${m.full_name}</td>`;
         data.rounds.forEach(r => {
             const amt = (data.payments[m.id] && data.payments[m.id][r]) || 0;
             html += amt > 0 ? `<td>${amt}</td>` : `<td>-</td>`;

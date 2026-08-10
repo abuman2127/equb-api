@@ -142,6 +142,26 @@ app.post('/members', requireLogin, async (req, res) => {
     }
 });
 
+app.post('/members', requireLogin, async (req, res) => {
+    const { full_name, phone, period_type, group_id } = req.body;
+    try {
+        const maxResult = await pool.query(
+            `SELECT COALESCE(MAX(group_member_no), 0) AS max_no FROM members WHERE group_id = $1`,
+            [group_id]
+        );
+        const nextNo = Number(maxResult.rows[0].max_no) + 1;
+
+        const result = await pool.query(
+            `INSERT INTO members (full_name, phone, period_type, group_id, group_member_no) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            [full_name, phone, period_type, group_id, nextNo]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/payments', requireLogin, async (req, res) => {
     const { member_id, amount, period_type, paid_at } = req.body;
     try {
@@ -294,11 +314,11 @@ app.get('/members-rounds', requireLogin, async (req, res) => {
 
         const { group_id } = req.query;
         const membersResult = await pool.query(
-            group_id
-                ? `SELECT id, full_name FROM members WHERE is_active = true AND group_id = $1 ORDER BY id`
-                : `SELECT id, full_name FROM members WHERE is_active = true ORDER BY id`,
-            group_id ? [group_id] : []
-        );
+    group_id
+        ? `SELECT id, full_name, group_member_no FROM members WHERE is_active = true AND group_id = $1 ORDER BY group_member_no`
+        : `SELECT id, full_name, group_member_no FROM members WHERE is_active = true ORDER BY group_id, group_member_no`,
+    group_id ? [group_id] : []
+);
 
         const paymentsResult = await pool.query(
             `SELECT member_id, DATE(paid_at) AS pay_date, SUM(amount) AS total

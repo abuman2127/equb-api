@@ -112,7 +112,7 @@
         #rounds_table { border-collapse: collapse; width: 100%; margin-top: 12px; font-size: 13px; }
         #rounds_table th, #rounds_table td { border: 1px solid var(--border); padding: 6px 10px; text-align: center; color: var(--text); }
         #rounds_table th { background: rgba(128,128,128,0.08); }
-        #rounds_table td:nth-child(3), #rounds_table th:nth-child(3) { text-align: left; font-weight: bold; }
+        #rounds_table td:nth-child(2), #rounds_table th:nth-child(2) { text-align: left; font-weight: bold; }
 
         .group-bar { margin-bottom:16px; }
         .group-bar label { font-size:13px; color: var(--text-muted); margin-right:8px; }
@@ -208,7 +208,7 @@ function filterMembers() {
     const rows = document.querySelectorAll('#rounds_table tr');
     rows.forEach((row, index) => {
         if (index === 0) return;
-        const nameCell = row.cells[2];
+        const nameCell = row.cells[1];
         if (!nameCell) return;
         const name = nameCell.innerText.toLowerCase();
         row.style.display = name.includes(query) ? '' : 'none';
@@ -253,9 +253,9 @@ async function loadRoundsTable() {
     if (!res.ok) return;
     const data = await res.json();
 
-    let html = '<tr><th>ID</th><th>No.</th><th>Member</th>' + data.rounds.map(r => `<th>${r}</th>`).join('') + '<th>Action</th></tr>';
+    let html = '<tr><th>ID</th><th>Member</th>' + data.rounds.map(r => `<th>${r}</th>`).join('') + '<th>Action</th></tr>';
     data.members.forEach(m => {
-        html += `<tr><td>${m.id}</td><td>${m.group_member_no || '-'}</td><td>${m.full_name}</td>`;
+        html += `<tr><td>${m.id}</td><td>${m.full_name}</td>`;
         data.rounds.forEach(r => {
             const amt = (data.payments[m.id] && data.payments[m.id][r]) || 0;
             html += amt > 0 ? `<td>${amt}</td>` : `<td>-</td>`;

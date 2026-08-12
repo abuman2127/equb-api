@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payouts & Winners - Equb Manager</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --sidebar: #ffffff;
+            --bg: #f3f4f6;
+            --card: #ffffff;
+            --text: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            
+            --success: #10b981;
+            --success-bg: #ecfdf5;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --icon-blue-bg: #dbeafe;
+
+            --font-main: 'Inter', sans-serif;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --transition: all 0.3s ease;
+        }
+
+        body.dark {
+            --bg: #12161f;
+            --card: #1a2332;
+            --sidebar: #1a2332;
+            --text: #e5e9f0;
+            --text-muted: #9aa4b8;
+            --border: #2a3547;
+            --icon-blue-bg: #1e3a8a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-main); }
+        body { background-color: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow-x: hidden; transition: var(--transition); }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+
+        .sidebar { width: 260px; background-color: var(--sidebar); border-right: 1px solid var(--border); height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; display: flex; flex-direction: column; }
+        .brand { height: 72px; display: flex; align-items: center; padding: 0 24px; gap: 12px; border-bottom: 1px solid var(--border); }
+        .brand-icon { width: 32px; height: 32px; background: #eab308; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; }
+        .brand-text { font-weight: 700; font-size: 16px; color: var(--text); }
+        .section-label { padding: 24px 24px 8px; font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+        
+        .sidebar-menu { flex: 1; overflow-y: auto; padding: 0 16px 24px; display: flex; flex-direction: column; gap: 4px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px; color: var(--text-muted); text-decoration: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: var(--transition); }
+        .menu-item i { width: 20px; text-align: center; font-size: 16px; }
+        .menu-item:hover { background-color: var(--bg); color: var(--text); }
+        .menu-item.active { background-color: var(--icon-blue-bg); color: var(--primary-dark); font-weight: 600; }
+
+        .main-content { flex: 1; margin-left: 260px; display: flex; flex-direction: column; min-width: 0; }
+
+        .header { height: 72px; background-color: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 90; }
+        
+        .header-right { display: flex; align-items: center; gap: 12px; margin-left: auto;}
+        .btn-action { border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); transition: var(--transition); }
+        .btn-action:hover { filter: brightness(0.95); }
+        .btn-logout { background: var(--danger-bg); color: var(--danger); border: none; }
+        body.dark .btn-logout { background: #7f1d1d; color: #fca5a5; }
+
+        .container { padding: 32px; max-width: 1400px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 24px; }
+        .page-title { font-size: 24px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 12px; }
+
+        .toolbar { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 16px 24px; border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        .filter-group { display: flex; align-items: center; gap: 12px; }
+        .filter-group label { font-size: 14px; font-weight: 600; color: var(--text-muted); }
+        select { background: var(--bg); border: 1px solid var(--border); padding: 10px 16px; border-radius: var(--radius-sm); font-size: 14px; color: var(--text); outline: none; min-width: 200px; }
+
+        .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-sm); overflow-x: auto; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 16px;}
+        .panel-header h2 { margin: 0; font-size: 18px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+        th, td { padding: 16px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        td { font-size: 14px; font-weight: 500; color: var(--text); }
+        
+        .badge-trophy { background: #fef08a; color: #854d0e; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; }
+        body.dark .badge-trophy { background: #713f12; color: #fef08a; border: 1px solid #854d0e; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="fa-solid fa-layer-group"></i></div>
+            <div class="brand-text">EQUB MGT</div>
+        </div>
+
+        <div class="section-label">MAIN</div>
+        <div class="sidebar-menu">
+            <a href="/index.html" class="menu-item"><i class="fa-solid fa-house"></i> Dashboard</a>
+            <a href="/members.html" class="menu-item"><i class="fa-solid fa-users"></i> Members</a>
+            <a href="/payments.html" class="menu-item"><i class="fa-solid fa-wallet"></i> Payments</a>
+            <a href="/daily-collection.html" class="menu-item"><i class="fa-solid fa-calendar-day"></i> Daily Collection</a>
+            <a href="/weekly-collection.html" class="menu-item"><i class="fa-solid fa-calendar-week"></i> Weekly Collection</a>
+            <a href="/groups.html" class="menu-item"><i class="fa-solid fa-users-rectangle"></i> Groups (Equb)</a>
+            <a href="/winners.html" class="menu-item active"><i class="fa-solid fa-trophy"></i> Payouts (Winners)</a>
+            <a href="/reports.html" class="menu-item"><i class="fa-solid fa-chart-pie"></i> Reports</a>
+            <a href="/export.html" class="menu-item"><i class="fa-solid fa-file-export"></i> Export</a>
+        </div>
+
+        <div class="section-label">OTHERS</div>
+        <div class="sidebar-menu">
+            <a href="#" class="menu-item"><i class="fa-solid fa-bell"></i> Notifications</a>
+            <a href="/settings.html" class="menu-item"><i class="fa-solid fa-gear"></i> Settings</a>
+        </div>
+    </aside>
+
+    <div class="main-content">
+        <header class="header">
+            <div></div> <!-- Spacer -->
+            <div class="header-right">
+                <button class="btn-action" onclick="toggleCalendar()" id="cal_toggle"><i class="fa-solid fa-calendar"></i> GC Mode</button>
+                <button class="btn-action" onclick="toggleDarkMode()" id="dark_toggle">🌙 Dark Mode</button>
+                <button class="btn-action btn-logout" onclick="logout()"><i class="fa-solid fa-power-off"></i> Logout</button>
+            </div>
+        </header>
+
+        <div class="container">
+            <h1 class="page-title"><i class="fa-solid fa-trophy" style="color: #eab308;"></i> Payout History</h1>
+
+            <div class="toolbar">
+                <div class="filter-group">
+                    <label><i class="fa-solid fa-filter"></i> Select Group:</label>
+                    <select id="group_selector" onchange="loadWinnersTable()"></select>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-clipboard-list" style="color: var(--primary);"></i> Winners List</h2>
+                </div>
+                <div class="table-wrapper">
+                    <table id="winners_table">
+                        <!-- Populated by JS -->
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// --- Ethiopian Calendar Logic ---
+const ETHIOPIAN_MONTHS = ['Meskerem','Tikimt','Hidar','Tahsas','Tir','Yekatit','Megabit','Miazia','Ginbot','Sene','Hamle','Nehase','Pagume'];
+function gregorianToEthiopian(gDate) {
+    const jdn = Math.floor((gDate.getTime() / 86400000) + 2440587.5 + 0.5);
+    const ethEpoch = 1723856;
+    const r = (jdn - ethEpoch) % 1461;
+    const n = (r % 365) + 365 * Math.floor(r / 1460);
+    const eYear = 4 * Math.floor((jdn - ethEpoch) / 1461) + Math.floor(r / 365) - Math.floor(r / 1460);
+    const eMonth = Math.floor(n / 30) + 1;
+    const eDay = (n % 30) + 1;
+    return { year: eYear, month: eMonth, day: eDay, monthName: ETHIOPIAN_MONTHS[eMonth - 1] };
+}
+function formatEthiopian(gDateString) {
+    if(!gDateString) return '-';
+    const d = new Date(gDateString);
+    const e = gregorianToEthiopian(d);
+    return `${e.day} ${e.monthName} ${e.year}`;
+} 
+function toggleCalendar() {
+    const current = localStorage.getItem('calendarType') || 'GC';
+    localStorage.setItem('calendarType', current === 'GC' ? 'EC' : 'GC');
+    location.reload(); 
+}
+function getCalendarType() { return localStorage.getItem('calendarType') || 'GC'; }
+function formatDate(gDateString) {
+    if(!gDateString) return '-';
+    if (getCalendarType() === 'EC') return formatEthiopian(gDateString);
+    return new Date(gDateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+// --- Theme Logic ---
+function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark);
+    document.getElementById('dark_toggle').innerText = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
+
+function loadPreferences() {
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark');
+        document.getElementById('dark_toggle').innerText = '☀️ Light Mode';
+    }
+    const calType = getCalendarType();
+    document.getElementById('cal_toggle').innerHTML = calType === 'EC' ? '<i class="fa-solid fa-calendar"></i> EC Mode' : '<i class="fa-solid fa-calendar"></i> GC Mode';
+}
+
+// --- API Logic ---
+async function checkAuth() {
+    const res = await fetch('/me');
+    if (!res.ok) { window.location.href = '/login.html'; return false; }
+    return true;
+}
+
+async function logout() {
+    await fetch('/logout', { method: 'POST' });
+    window.location.href = '/login.html';
+}
+
+async function loadGroupOptions() {
+    const res = await fetch('/groups');
+    if (!res.ok) return;
+    const groups = await res.json();
+    const options = groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+    document.getElementById('group_selector').innerHTML = options || '<option value="">No Groups Found</option>';
+}
+
+async function loadWinnersTable() {
+    const groupId = document.getElementById('group_selector').value;
+    if(!groupId) return;
+    
+    // NOTE: This attempts to fetch from the backend route. 
+    // If your backend doesn't have a /winners route yet, it handles the error cleanly.
+    try {
+        const res = await fetch(`/winners?group_id=${groupId}`);
+        let html = '<tr><th>Round / Cycle</th><th>Winner Name</th><th>Payout Amount</th><th>Date Received</th></tr>';
+        
+        if (!res.ok) {
+            html += `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                No payout records found. <br><span style="font-size: 12px; font-style: italic;">(Please ensure the /winners route is setup in the backend)</span>
+            </td></tr>`;
+            document.getElementById('winners_table').innerHTML = html;
+            return;
+        }
+
+        const data = await res.json();
+        
+        if(data.length === 0) {
+            html += `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">No members have received a payout in this group yet.</td></tr>`;
+        } else {
+            data.forEach(w => {
+                html += `<tr>
+                            <td style="color: var(--text-muted); font-weight: 600;">Round ${w.round}</td>
+                            <td><span class="badge-trophy"><i class="fa-solid fa-award"></i> ${w.winner_name || w.name}</span></td>
+                            <td style="color: var(--success); font-weight: 700;">Birr ${Number(w.amount).toLocaleString()}</td>
+                            <td style="color: var(--text-muted);">${formatDate(w.date_won || w.created_at)}</td>
+                         </tr>`;
+            });
+        }
+        document.getElementById('winners_table').innerHTML = html;
+        
+    } catch (e) {
+        document.getElementById('winners_table').innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px; color: var(--danger);">Data unavailable. Backend endpoint is missing.</td></tr>`;
+    }
+}
+
+// Init
+(async () => {
+    loadPreferences();
+    if (await checkAuth()) {
+        await loadGroupOptions();
+        loadWinnersTable();
+    }
+})();
+</script>
+</body>
+</html>

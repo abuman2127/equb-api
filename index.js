@@ -160,6 +160,24 @@ app.post('/members', requireLogin, async (req, res) => {
     }
 });
 
+    app.put('/members/:id', requireLogin, async (req, res) => {
+        const { id } = req.params;
+        const { full_name, phone, group_member_no } = req.body;
+        try {
+            const result = await pool.query(
+                `UPDATE members SET full_name = $1, phone = $2, group_member_no = $3 WHERE id = $4 RETURNING *`,
+                [full_name, phone, group_member_no || null, id]
+            );
+            if (result.rows.length === 0) {
+                return res.status(404).json({ error: 'Member not found' });
+            }
+            res.json(result.rows[0]);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: err.message });
+        }
+    });
+
 app.post('/members', requireLogin, async (req, res) => {
     const { full_name, phone, period_type, group_id } = req.body;
     try {

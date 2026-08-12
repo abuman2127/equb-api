@@ -184,6 +184,26 @@
     </div>
 
 <script>
+
+async function editMember(id, currentName, currentNo) {
+    const newName = prompt('Full name:', currentName);
+    if (newName === null) return;
+    const newNo = prompt('Member number (leave blank for none):', currentNo || '');
+    if (newNo === null) return;
+
+    const res = await fetch('/members/' + id, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ full_name: newName, group_member_no: newNo || null })
+    });
+    if (res.ok) {
+        loadRoundsTable();
+    } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to update member');
+    }
+}
+
 function loadDarkModePreference() {
     if (localStorage.getItem('darkMode') === 'true') {
         document.body.classList.add('dark');
@@ -262,7 +282,10 @@ async function loadRoundsTable() {
             const amt = (data.payments[m.id] && data.payments[m.id][r]) || 0;
             html += amt > 0 ? `<td>${amt}</td>` : `<td>-</td>`;
         });
-        html += `<td><button onclick="deleteMember(${m.id})" style="width:auto; background:#d64545; padding:4px 10px; font-size:12px;">Remove</button></td>`;
+            html += `<td>
+            <button onclick="editMember(${m.id}, '${m.full_name.replace(/'/g, "\\'")}', ${m.group_member_no || 'null'})" style="width:auto; background:#2c7be5; padding:4px 10px; font-size:12px;">Edit</button>
+            <button onclick="deleteMember(${m.id})" style="width:auto; background:#d64545; padding:4px 10px; font-size:12px;">Remove</button>
+        </td>`;
         html += '</tr>';
     });
     document.getElementById('rounds_table').innerHTML = html;

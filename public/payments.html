@@ -192,22 +192,23 @@ async function loadRecent() {
     if (!res.ok) return;
     const data = await res.json();
 
-    let html = '<tr><th>ID</th><th>Member</th><th>Amount</th><th>Type</th><th>Time</th><th>Status</th><th>Action</th></tr>';
-    data.forEach(p => {
-        const time = new Date(p.paid_at).toLocaleString();
-        html += `<tr>
-            <td>${p.member_id}</td>
-            <td>${p.full_name}</td>
-            <td>${Number(p.amount).toLocaleString()} Birr</td>
-            <td>${p.period_type}</td>
-            <td>${time}</td>
-            <td><span class="status-paid">${p.status}</span></td>
-            <td>
-                <button onclick="editPayment(${p.id}, ${p.amount})" style="width:auto; padding:4px 10px; font-size:12px;">Edit</button>
-                <button onclick="deletePayment(${p.id})" style="width:auto; background:#d64545; padding:4px 10px; font-size:12px;">Delete</button>
-            </td>
-        </tr>`;
-    });
+    let html = '<tr><th>ID</th><th>Member</th><th>Group</th><th>Amount</th><th>Type</th><th>Time</th><th>Status</th><th>Action</th></tr>';
+data.forEach(p => {
+    const time = new Date(p.paid_at).toLocaleString();
+    html += `<tr>
+        <td>${p.member_id}</td>
+        <td>${p.full_name}</td>
+        <td>${p.group_name || '-'}</td>
+        <td>${Number(p.amount).toLocaleString()} Birr</td>
+        <td>${p.period_type}</td>
+        <td>${time}</td>
+        <td><span class="status-paid">${p.status}</span></td>
+        <td>
+            <button onclick="editPayment(${p.id}, ${p.amount})" style="width:auto; padding:4px 10px; font-size:12px;">Edit</button>
+            <button onclick="deletePayment(${p.id})" style="width:auto; background:#d64545; padding:4px 10px; font-size:12px;">Delete</button>
+        </td>
+    </tr>`;
+});
     document.getElementById('recent_table').innerHTML = html;
 }
 

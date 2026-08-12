@@ -261,9 +261,10 @@ app.delete('/payments/:id', requireLogin, requireAdmin, async (req, res) => {
 app.get('/payments/recent', requireLogin, async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT p.id, p.member_id, m.full_name, p.amount, p.paid_at, p.period_type, p.status
+            `SELECT p.id, p.member_id, m.full_name, g.name AS group_name, p.amount, p.paid_at, p.period_type, p.status
              FROM payments p
              JOIN members m ON p.member_id = m.id
+             LEFT JOIN groups g ON m.group_id = g.id
              ORDER BY p.paid_at DESC
              LIMIT 20`
         );

@@ -90,6 +90,13 @@
 
         .badge-paid { color: #1b8a4a; background: #e6f7ec; padding: 3px 10px; border-radius: 12px; font-size: 12px; }
         .badge-unpaid { color: #b02a2a; background: #fbe9e9; padding: 3px 10px; border-radius: 12px; font-size: 12px; }
+        .topbar .search {
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--card-bg);
+        color: var(--text);
+        }
     </style>
 </head>
 <body>
@@ -120,11 +127,12 @@
     </div>
 
     <div class="main-content">
-        <div class="topbar">
+       <div class="topbar">
             <h1>Daily Collection</h1>
+            <input class="search" id="search_box" placeholder="Search members..." oninput="filterMembers()" style="max-width:220px;">
             <input type="date" id="date_picker">
             <button onclick="logout()">Log Out</button>
-        </div>
+</div>
 
         <div class="stat-cards">
             <div class="stat-card"><div class="label">Total Collected</div><div class="value" id="stat_total">-</div></div>
@@ -139,6 +147,19 @@
     </div>
 
 <script>
+
+function filterMembers() {
+    const query = document.getElementById('search_box').value.toLowerCase();
+    const rows = document.querySelectorAll('#collection_table tr');
+    rows.forEach((row, index) => {
+        if (index === 0) return;
+        const nameCell = row.cells[0];
+        if (!nameCell) return;
+        const name = nameCell.innerText.toLowerCase();
+        row.style.display = name.includes(query) ? '' : 'none';
+    });
+}
+
 function loadDarkModePreference() {
     if (localStorage.getItem('darkMode') === 'true') {
         document.body.classList.add('dark');

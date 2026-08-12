@@ -172,6 +172,7 @@
                     <option value="weekly">Weekly</option>
                 </select>
                 <select id="m_group"></select>
+                <input id="m_number" placeholder="Member No. (optional, auto if blank)" type="number">
                 <button onclick="addMember()">Save Member</button>
                 <div id="m_msg" class="msg"></div>
             </div>
@@ -235,7 +236,8 @@ async function addMember() {
         full_name: document.getElementById('m_name').value,
         phone: document.getElementById('m_phone').value,
         period_type: document.getElementById('m_period').value,
-        group_id: document.getElementById('m_group').value
+        group_id: document.getElementById('m_group').value,
+        group_member_no: document.getElementById('m_number').value || undefined
     };
     const res = await fetch('/members', {
         method: 'POST',
@@ -255,7 +257,7 @@ async function loadRoundsTable() {
 
     let html = '<tr><th>ID</th><th>Member</th>' + data.rounds.map(r => `<th>${r}</th>`).join('') + '<th>Action</th></tr>';
     data.members.forEach(m => {
-        html += `<tr><td>${m.id}</td><td>${m.full_name}</td>`;
+        html += `<tr><td>${m.group_member_no || '-'}</td><td>${m.full_name}</td>`;
         data.rounds.forEach(r => {
             const amt = (data.payments[m.id] && data.payments[m.id][r]) || 0;
             html += amt > 0 ? `<td>${amt}</td>` : `<td>-</td>`;

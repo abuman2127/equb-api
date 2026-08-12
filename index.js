@@ -129,11 +129,29 @@ app.get('/me', (req, res) => {
 
 // ---- Members & Payments (Admin + Cashier) ----
 app.post('/members', requireLogin, async (req, res) => {
-    const { full_name, phone, period_type, group_id } = req.body;
+    const { full_name, phone, period_type, group_id, group_member_no } = req.body;
     try {
+        let memberNo;
+        if (group_member_no) {
+            const existing = await pool.query(
+                `SELECT id FROM members WHERE group_id = $1 AND group_member_no = $2 AND is_active = true`,
+                [group_id, group_member_no]
+            );
+            if (existing.rows.length > 0) {
+                return res.status(400).json({ error: 'That number is already used in this group' });
+            }
+            memberNo = group_member_no;
+        } else {
+            const maxResult = await pool.query(
+                `SELECT COALESCE(MAX(group_member_no), 0) AS max_no FROM members WHERE group_id = $1`,
+                [group_id]
+            );
+            memberNo = Number(maxResult.rows[0].max_no) + 1;
+        }
+
         const result = await pool.query(
-            `INSERT INTO members (full_name, phone, period_type, group_id) VALUES ($1, $2, $3, $4) RETURNING *`,
-            [full_name, phone, period_type, group_id]
+            `INSERT INTO members (full_name, phone, period_type, group_id, group_member_no) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            [full_name, phone, period_type, group_id, memberNo]
         );
         res.json(result.rows[0]);
     } catch (err) {

@@ -351,8 +351,12 @@ app.get('/members-rounds', requireLogin, async (req, res) => {
         const { group_id } = req.query;
         const membersResult = await pool.query(
     group_id
-        ? `SELECT id, full_name, group_member_no FROM members WHERE is_active = true AND group_id = $1 ORDER BY group_member_no`
-        : `SELECT id, full_name, group_member_no FROM members WHERE is_active = true ORDER BY group_id, group_member_no`,
+        ? `SELECT m.id, m.full_name, m.phone, m.group_member_no, g.name AS group_name
+           FROM members m LEFT JOIN groups g ON m.group_id = g.id
+           WHERE m.is_active = true AND m.group_id = $1 ORDER BY m.group_member_no`
+        : `SELECT m.id, m.full_name, m.phone, m.group_member_no, g.name AS group_name
+           FROM members m LEFT JOIN groups g ON m.group_id = g.id
+           WHERE m.is_active = true ORDER BY m.group_id, m.group_member_no`,
     group_id ? [group_id] : []
 );
 

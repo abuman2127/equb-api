@@ -713,8 +713,8 @@ app.get('/weekly-collection', requireLogin, async (req, res) => {
 
     try {
         const membersResult = await pool.query(
-            `SELECT id, full_name, phone, period_type FROM members WHERE is_active = true ORDER BY id`
-        );
+         `SELECT id, full_name, phone, period_type FROM members WHERE is_active = true AND period_type = 'weekly' ORDER BY id`
+);
         const paymentsResult = await pool.query(
             `SELECT member_id, SUM(amount) AS total
              FROM payments

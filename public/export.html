@@ -1,154 +1,218 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Export - Equb Manager</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
         :root {
-            --bg: #f4f6f9;
-            --card-bg: #ffffff;
-            --text: #1a2332;
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --sidebar: #ffffff;
+            --bg: #f3f4f6;
+            --card: #ffffff;
+            --text: #1f2937;
             --text-muted: #6b7280;
-            --border: #e0e4e8;
+            --border: #e5e7eb;
+            
+            --success: #10b981;
+            --success-dark: #059669;
+            --success-bg: #ecfdf5;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --icon-blue-bg: #dbeafe;
+
+            --font-main: 'Inter', sans-serif;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --transition: all 0.3s ease;
         }
+
         body.dark {
             --bg: #12161f;
-            --card-bg: #1a2332;
+            --card: #1a2332;
+            --sidebar: #1a2332;
             --text: #e5e9f0;
             --text-muted: #9aa4b8;
             --border: #2a3547;
+            --icon-blue-bg: #1e3a8a;
         }
 
-        * { box-sizing: border-box; }
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 0; 
-            background: var(--bg); 
-            color: var(--text);
-            display: flex; 
-            transition: background 0.2s, color 0.2s;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-main); }
+        body { background-color: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow-x: hidden; transition: var(--transition); }
 
-        .sidebar {
-            width: 220px; background: #1a2332; color: white; height: 100vh;
-            position: fixed; padding: 20px 0; overflow-y: auto;
-        }
-        .sidebar .logo { display: flex; align-items: center; gap: 12px; padding: 0 20px 20px; }
-        .sidebar .logo-icon {
-            width: 40px; height: 40px; background: #2c7be5; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
-        }
-        .sidebar .logo-text { font-weight: bold; font-size: 16px; line-height: 1.3; }
-        .sidebar .logo-text span { display: block; font-size: 10px; font-weight: normal; color: #8b95a5; letter-spacing: 0.5px; }
-        .sidebar .section-label { padding: 16px 20px 6px; font-size: 11px; color: #6b7590; letter-spacing: 1px; }
-        .sidebar nav { margin-top: 4px; }
-        .sidebar a {
-            display: flex; align-items: center; gap: 10px; padding: 10px 20px;
-            color: #c5cdd8; text-decoration: none; font-size: 14px; margin: 2px 10px; border-radius: 8px;
-        }
-        .sidebar a .icon { font-size: 16px; width: 20px; text-align: center; }
-        .sidebar a.active { background: #2c7be5; color: white; }
-        .sidebar a:hover { background: #2a3547; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
 
-        .main-content { margin-left: 220px; padding: 24px; width: 100%; }
+        .sidebar { width: 260px; background-color: var(--sidebar); border-right: 1px solid var(--border); height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; display: flex; flex-direction: column; }
+        .brand { height: 72px; display: flex; align-items: center; padding: 0 24px; gap: 12px; border-bottom: 1px solid var(--border); }
+        .brand-icon { width: 32px; height: 32px; background: var(--primary); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; }
+        .brand-text { font-weight: 700; font-size: 16px; color: var(--text); }
+        .section-label { padding: 24px 24px 8px; font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+        
+        .sidebar-menu { flex: 1; overflow-y: auto; padding: 0 16px 24px; display: flex; flex-direction: column; gap: 4px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px; color: var(--text-muted); text-decoration: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: var(--transition); }
+        .menu-item i { width: 20px; text-align: center; font-size: 16px; }
+        .menu-item:hover { background-color: var(--bg); color: var(--text); }
+        .menu-item.active { background-color: var(--icon-blue-bg); color: var(--primary-dark); font-weight: 600; }
 
-        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .topbar h1 { margin: 0; font-size: 20px; color: var(--text); }
-        .topbar button {
-            width: auto; background: #d64545; padding: 8px 16px; border: none;
-            border-radius: 6px; color: white; cursor: pointer;
-        }
+        .main-content { flex: 1; margin-left: 260px; display: flex; flex-direction: column; min-width: 0; }
 
-        .export-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+        .header { height: 72px; background-color: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: flex-end; padding: 0 32px; position: sticky; top: 0; z-index: 90; }
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        .btn-action { border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); transition: var(--transition); }
+        .btn-action:hover { filter: brightness(0.95); }
+        .btn-logout { background: var(--danger-bg); color: var(--danger); border: none; }
+        body.dark .btn-logout { background: #7f1d1d; color: #fca5a5; }
+
+        .container { padding: 32px; max-width: 1400px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 24px; }
+        .page-title { font-size: 24px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 12px; }
+
+        /* Export Cards Styling */
+        .export-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
         .export-card {
-            background: var(--card-bg); 
-            border: 1px solid var(--border); 
-            border-radius: 8px;
-            padding: 20px; 
-            text-align: center;
+            background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md);
+            padding: 32px; text-align: center; box-shadow: var(--shadow-sm);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .export-card .icon { font-size: 32px; margin-bottom: 10px; }
-        .export-card h3 { margin: 0 0 6px; color: var(--text); }
-        .export-card p { font-size: 13px; color: var(--text-muted); margin: 0 0 16px; }
-        .export-card a {
-            display: inline-block; background: #1b8a4a; color: white; text-decoration: none;
-            padding: 10px 20px; border-radius: 6px; font-size: 14px;
+        .export-card .icon { font-size: 48px; margin-bottom: 16px; }
+        .export-card h3 { margin: 0 0 8px; color: var(--text); font-size: 18px; font-weight: 600;}
+        .export-card p { font-size: 14px; color: var(--text-muted); margin: 0 0 24px; line-height: 1.5; }
+        
+        .btn-export {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            background: var(--success); color: white; text-decoration: none;
+            padding: 12px 24px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+            transition: var(--transition); width: 100%;
         }
-        .export-card a:hover { background: #157038; }
+        .btn-export:hover { background: var(--success-dark); }
 
-        /* Style inputs inside the export card for dark mode */
-        input[type="date"] {
-            background: var(--bg);
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            color-scheme: dark; /* Helps standard browser date pickers adapt */
+        .form-input {
+            background: var(--bg); border: 1px solid var(--border); padding: 12px 16px; 
+            border-radius: var(--radius-sm); font-size: 14px; color: var(--text); 
+            outline: none; width: 100%; font-family: inherit; color-scheme: light dark;
         }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo">
-            <div class="logo-icon">👥</div>
-            <div class="logo-text">EKUBE<span>MANAGEMENT SYSTEM</span></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="fa-solid fa-layer-group"></i></div>
+            <div class="brand-text">EQUB MGT</div>
         </div>
 
         <div class="section-label">MAIN</div>
-        <nav>
-            <a href="/index.html"><span class="icon">🏠</span> Dashboard</a>
-            <a href="/members.html"><span class="icon">👤</span> Members</a>
-            <a href="/payments.html"><span class="icon">💳</span> Payments</a>
-            <a href="/daily-collection.html"><span class="icon">📅</span> Daily Collection</a>
-            <a href="/weekly-collection.html"><span class="icon">🗓️</span> Weekly Collection</a>
-            <a href="/groups.html"><span class="icon">👥</span> Groups (Equb)</a>
-            <a href="/reports.html"><span class="icon">📊</span> Reports</a>
-            <a href="/export.html" class="active"><span class="icon">📤</span> Export</a>
-        </nav>
+        <div class="sidebar-menu">
+            <a href="/index.html" class="menu-item"><i class="fa-solid fa-house"></i> Dashboard</a>
+            <a href="/members.html" class="menu-item"><i class="fa-solid fa-users"></i> Members</a>
+            <a href="/payments.html" class="menu-item"><i class="fa-solid fa-wallet"></i> Payments</a>
+            <a href="/daily-collection.html" class="menu-item"><i class="fa-solid fa-calendar-day"></i> Daily Collection</a>
+            <a href="/weekly-collection.html" class="menu-item"><i class="fa-solid fa-calendar-week"></i> Weekly Collection</a>
+            <a href="/groups.html" class="menu-item"><i class="fa-solid fa-users-rectangle"></i> Groups (Equb)</a>
+            <a href="/winners.html" class="menu-item"><i class="fa-solid fa-trophy"></i> Payouts (Winners)</a>
+            <a href="/reports.html" class="menu-item"><i class="fa-solid fa-chart-pie"></i> Reports</a>
+            <a href="/export.html" class="menu-item active"><i class="fa-solid fa-file-export"></i> Export</a>
+        </div>
 
         <div class="section-label">OTHERS</div>
-        <nav>
-            <a href="#"><span class="icon">🔔</span> Notifications</a>
-            <a href="/settings.html"><span class="icon">⚙️</span> Settings</a>
-        </nav>
-    </div>
+        <div class="sidebar-menu">
+            <a href="#" class="menu-item"><i class="fa-solid fa-bell"></i> Notifications</a>
+            <a href="/settings.html" class="menu-item"><i class="fa-solid fa-gear"></i> Settings</a>
+        </div>
+    </aside>
 
     <div class="main-content">
-        <div class="topbar">
-            <h1>Export</h1>
-            <button onclick="logout()">Log Out</button>
-        </div>
-
-        <div class="export-cards">
-            <div class="export-card">
-                <div class="icon">👤</div>
-                <h3>Members</h3>
-                <p>Export all active members to Excel</p>
-                <a href="/export/members">Download .xlsx</a>
+        <header class="header">
+            <div class="header-right">
+                <button class="btn-action" onclick="toggleCalendar()" id="cal_toggle"><i class="fa-solid fa-calendar"></i> GC Mode</button>
+                <button class="btn-action" onclick="toggleDarkMode()" id="dark_toggle">🌙 Dark Mode</button>
+                <button class="btn-action btn-logout" onclick="logout()"><i class="fa-solid fa-power-off"></i> Logout</button>
             </div>
-            <div class="export-card">
-            <div class="icon">💳</div>
-            <h3>Payments</h3>
-            <p>Export payments for a date range</p>
-            <input type="date" id="exp_start" style="width:100%; margin-bottom:6px; padding:6px;">
-            <input type="date" id="exp_end" style="width:100%; margin-bottom:10px; padding:6px;">
-            <button onclick="exportPayments()" style="background:#1b8a4a; width:100%; padding:10px; color:white; border:none; border-radius:6px; cursor:pointer; font-size:14px;">Download .xlsx</button>
-        </div>
+        </header>
+
+        <div class="container">
+            <h1 class="page-title"><i class="fa-solid fa-file-export" style="color: var(--primary);"></i> Data Export</h1>
+
+            <div class="export-cards">
+                
+                <!-- Members Export Card -->
+                <div class="export-card">
+                    <div class="icon"><i class="fa-solid fa-file-csv" style="color: var(--primary);"></i></div>
+                    <h3>Export Members</h3>
+                    <p>Download a complete list of all registered equb members to Excel format.</p>
+                    <a href="/export/members" class="btn-export"><i class="fa-solid fa-download"></i> Download Members Data</a>
+                </div>
+                
+                <!-- Payments Export Card -->
+                <div class="export-card">
+                    <div class="icon"><i class="fa-solid fa-file-invoice-dollar" style="color: var(--success);"></i></div>
+                    <h3>Export Payments</h3>
+                    <p>Download transaction and payment records within a specific date range.</p>
+                    
+                    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom: 20px; width: 100%;">
+                        <div style="text-align: left;">
+                            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom:4px; display:block;">Start Date</label>
+                            <input type="date" id="exp_start" class="form-input">
+                        </div>
+                        <div style="text-align: left;">
+                            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom:4px; display:block;">End Date</label>
+                            <input type="date" id="exp_end" class="form-input">
+                        </div>
+                    </div>
+                    
+                    <button onclick="exportPayments()" class="btn-export" style="border: none; cursor: pointer;">
+                        <i class="fa-solid fa-download"></i> Download Payments Data
+                    </button>
+                </div>
+
+            </div>
         </div>
     </div>
 
 <script>
-function loadDarkModePreference() {
-    if (localStorage.getItem('darkMode') === 'true') {
-        document.body.classList.add('dark');
-    }
+// --- Ethiopian Calendar Logic ---
+function toggleCalendar() {
+    const current = localStorage.getItem('calendarType') || 'GC';
+    localStorage.setItem('calendarType', current === 'GC' ? 'EC' : 'GC');
+    location.reload(); 
+}
+function getCalendarType() { return localStorage.getItem('calendarType') || 'GC'; }
+
+// --- Theme Logic ---
+function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark);
+    document.getElementById('dark_toggle').innerText = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
 }
 
+function loadPreferences() {
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark');
+        document.getElementById('dark_toggle').innerText = '☀️ Light Mode';
+    }
+    const calType = getCalendarType();
+    document.getElementById('cal_toggle').innerHTML = calType === 'EC' ? '<i class="fa-solid fa-calendar"></i> EC Mode' : '<i class="fa-solid fa-calendar"></i> GC Mode';
+    
+    // Set default dates to current month
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    document.getElementById('exp_end').value = today.toISOString().split('T')[0];
+    document.getElementById('exp_start').value = firstDay.toISOString().split('T')[0];
+}
+
+// --- API Logic ---
 async function checkAuth() {
     const res = await fetch('/me');
-    if (!res.ok) {
-        window.location.href = '/login.html';
-        return false;
-    }
+    if (!res.ok) { window.location.href = '/login.html'; return false; }
     const data = await res.json();
     if (data.role !== 'admin') {
         window.location.href = '/index.html';
@@ -172,8 +236,10 @@ function exportPayments() {
     window.location.href = `/export/payments?start_date=${start}&end_date=${end}`;
 }
 
-loadDarkModePreference();
-checkAuth();
+(async () => {
+    loadPreferences();
+    await checkAuth();
+})();
 </script>
 </body>
 </html>

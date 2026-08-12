@@ -165,6 +165,7 @@
             </div>
 
             <div id="add_member_form" style="display:none; margin: 12px 0;">
+                <input id="m_number" placeholder="Member No. (optional, auto if blank)" type="number">
                 <input id="m_name" placeholder="Full name">
                 <input id="m_phone" placeholder="Phone">
                 <select id="m_period">
@@ -172,7 +173,6 @@
                     <option value="weekly">Weekly</option>
                 </select>
                 <select id="m_group"></select>
-                <input id="m_number" placeholder="Member No. (optional, auto if blank)" type="number">
                 <button onclick="addMember()">Save Member</button>
                 <div id="m_msg" class="msg"></div>
             </div>

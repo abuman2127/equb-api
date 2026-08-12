@@ -259,14 +259,24 @@ app.delete('/payments/:id', requireLogin, requireAdmin, async (req, res) => {
 });
 
 app.get('/payments/recent', requireLogin, async (req, res) => {
+    const { group_id } = req.query;
     try {
         const result = await pool.query(
-            `SELECT p.id, p.member_id, m.full_name, g.name AS group_name, p.amount, p.paid_at, p.period_type, p.status
-             FROM payments p
-             JOIN members m ON p.member_id = m.id
-             LEFT JOIN groups g ON m.group_id = g.id
-             ORDER BY p.paid_at DESC
-             LIMIT 20`
+            group_id
+                ? `SELECT p.id, p.member_id, m.full_name, g.name AS group_name, p.amount, p.paid_at, p.period_type, p.status
+                   FROM payments p
+                   JOIN members m ON p.member_id = m.id
+                   LEFT JOIN groups g ON m.group_id = g.id
+                   WHERE m.group_id = $1
+                   ORDER BY p.paid_at DESC
+                   LIMIT 20`
+                : `SELECT p.id, p.member_id, m.full_name, g.name AS group_name, p.amount, p.paid_at, p.period_type, p.status
+                   FROM payments p
+                   JOIN members m ON p.member_id = m.id
+                   LEFT JOIN groups g ON m.group_id = g.id
+                   ORDER BY p.paid_at DESC
+                   LIMIT 20`,
+            group_id ? [group_id] : []
         );
         res.json(result.rows);
     } catch (err) {
@@ -286,6 +296,20 @@ app.delete('/members/:id', requireLogin, requireAdmin, async (req, res) => {
             return res.status(404).json({ error: 'Member not found' });
         }
         res.json({ success: true, member: result.rows[0] });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/members/by-group/:groupId', requireLogin, async (req, res) => {
+    const { groupId } = req.params;
+    try {
+        const result = await pool.query(
+            `SELECT id, full_name, group_member_no FROM members WHERE group_id = $1 AND is_active = true ORDER BY group_member_no`,
+            [groupId]
+        );
+        res.json(result.rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });

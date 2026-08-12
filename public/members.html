@@ -1,201 +1,256 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Members - Equb Manager</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
         :root {
-            --bg: #f4f6f9;
-            --card-bg: #ffffff;
-            --text: #1a2332;
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --sidebar: #ffffff;
+            --bg: #f3f4f6;
+            --card: #ffffff;
+            --text: #1f2937;
             --text-muted: #6b7280;
-            --border: #e0e4e8;
+            --border: #e5e7eb;
+            
+            --success: #10b981;
+            --success-bg: #ecfdf5;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --icon-blue-bg: #dbeafe;
+
+            --font-main: 'Inter', sans-serif;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --transition: all 0.3s ease;
         }
+
         body.dark {
             --bg: #12161f;
-            --card-bg: #1a2332;
+            --card: #1a2332;
+            --sidebar: #1a2332;
             --text: #e5e9f0;
             --text-muted: #9aa4b8;
             --border: #2a3547;
+            --icon-blue-bg: #1e3a8a;
         }
 
-        * { box-sizing: border-box; }
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            background: var(--bg);
-            color: var(--text);
-            display: flex;
-            transition: background 0.2s, color 0.2s;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-main); }
 
-        .sidebar {
-            width: 220px;
-            background: #1a2332;
-            color: white;
-            height: 100vh;
-            position: fixed;
-            padding: 20px 0;
-            overflow-y: auto;
-        }
-        .sidebar .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 0 20px 20px;
-        }
-        .sidebar .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: #2c7be5;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-        .sidebar .logo-text { font-weight: bold; font-size: 16px; line-height: 1.3; }
-        .sidebar .logo-text span { display: block; font-size: 10px; font-weight: normal; color: #8b95a5; letter-spacing: 0.5px; }
-        .sidebar .section-label { padding: 16px 20px 6px; font-size: 11px; color: #6b7590; letter-spacing: 1px; }
-        .sidebar nav { margin-top: 4px; }
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 20px;
-            color: #c5cdd8;
-            text-decoration: none;
-            font-size: 14px;
-            margin: 2px 10px;
-            border-radius: 8px;
-        }
-        .sidebar a .icon { font-size: 16px; width: 20px; text-align: center; }
-        .sidebar a.active { background: #2c7be5; color: white; }
-        .sidebar a:hover { background: #2a3547; }
+        body { background-color: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow-x: hidden; transition: var(--transition); }
 
-        .main-content { margin-left: 220px; padding: 24px; width: 100%; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
 
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
+        .sidebar { width: 260px; background-color: var(--sidebar); border-right: 1px solid var(--border); height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; display: flex; flex-direction: column; }
+        .brand { height: 72px; display: flex; align-items: center; padding: 0 24px; gap: 12px; border-bottom: 1px solid var(--border); }
+        .brand-icon { width: 32px; height: 32px; background: var(--primary); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; }
+        .brand-text { font-weight: 700; font-size: 16px; color: var(--text); }
+        .section-label { padding: 24px 24px 8px; font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; }
+        
+        .sidebar-menu { flex: 1; overflow-y: auto; padding: 0 16px 24px; display: flex; flex-direction: column; gap: 4px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px; color: var(--text-muted); text-decoration: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: var(--transition); }
+        .menu-item i { width: 20px; text-align: center; font-size: 16px; }
+        .menu-item:hover { background-color: var(--bg); color: var(--text); }
+        .menu-item.active { background-color: var(--icon-blue-bg); color: var(--primary-dark); font-weight: 600; }
+
+        .main-content { flex: 1; margin-left: 260px; display: flex; flex-direction: column; min-width: 0; }
+
+        .header { height: 72px; background-color: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 90; }
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .search-bar { display: flex; align-items: center; gap: 10px; background: var(--bg); border: 1px solid var(--border); padding: 8px 16px; border-radius: var(--radius-sm); width: 300px; transition: var(--transition); }
+        .search-bar i { color: var(--text-muted); }
+        .search-bar input { border: none; background: transparent; outline: none; width: 100%; font-size: 14px; color: var(--text); }
+        
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .btn-logout { background: var(--danger-bg); color: var(--danger); border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+
+        .container { padding: 32px; max-width: 1400px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 24px; }
+        .page-title { font-size: 24px; font-weight: 700; color: var(--text); }
+
+        .toolbar { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 16px 24px; border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        .filter-group { display: flex; align-items: center; gap: 12px; }
+        .filter-group label { font-size: 14px; font-weight: 600; color: var(--text-muted); }
+        
+        select, .form-input { background: var(--bg); border: 1px solid var(--border); padding: 10px 16px; border-radius: var(--radius-sm); font-size: 14px; color: var(--text); outline: none; min-width: 200px; }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+
+        .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-sm); }
+        
+        .add-form { background: var(--bg); padding: 20px; border-radius: var(--radius-sm); margin-bottom: 24px; border: 1px solid var(--border); display: none; }
+        .add-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; }
+        .msg { font-size: 14px; font-weight: 500; color: var(--success); margin-top: 12px; }
+
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        td { font-size: 14px; font-weight: 500; color: var(--text); }
+        
+        .btn-delete { background: var(--danger-bg); color: var(--danger); border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-delete:hover { background: var(--danger); color: white; }
+
+        .btn-edit { background: var(--icon-blue-bg); color: var(--primary-dark); border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-right: 4px; }
+        .btn-edit:hover { background: var(--primary); color: white; }
+
+        /* MODAL STYLES */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;
         }
-        .topbar h1 { margin: 0; font-size: 20px; color: var(--text); }
-        .topbar .search {
-            flex: 1;
-            max-width: 400px;
-            margin: 0 20px;
-            padding: 8px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            background: var(--card-bg);
-            color: var(--text);
+        .modal-card {
+            background: var(--card); width: 420px; border-radius: var(--radius-md);
+            padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid var(--border);
+            display: flex; flex-direction: column; max-height: 90vh;
         }
-        .topbar button { width: auto; background: #d64545; padding: 8px 16px; border: none; border-radius: 6px; color: white; cursor: pointer; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { margin: 0; font-size: 18px; color: var(--text); display: flex; align-items: center; gap: 8px;}
+        .modal-close { background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; }
+        
+        .stat-boxes { display: flex; gap: 12px; margin-bottom: 16px; }
+        .stat-box { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 8px; text-align: center; }
+        .stat-box .num { font-size: 22px; font-weight: 700; color: var(--primary); margin-bottom: 2px; }
+        .stat-box .label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
 
-        input, select, button { padding: 8px; margin: 4px 0; box-sizing: border-box; }
-        button { background: #2c7be5; color: white; border: none; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        td, th { border: 1px solid var(--border); padding: 8px; text-align: left; color: var(--text); }
-        .msg { color: #1b8a4a; font-size: 14px; }
+        .details-container { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; overflow-y: auto; flex-grow: 1; margin-bottom: 16px; }
+        .details-container::-webkit-scrollbar { width: 4px; }
+        .details-container::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        .detail-item:last-child { border-bottom: none; }
+        .detail-item .round-name { font-weight: 600; color: var(--text); }
+        .detail-item .round-amt { font-weight: 700; color: var(--success); }
+        .detail-item .round-missed { color: var(--text-muted); font-weight: 500; font-style: italic; }
 
-        .member-panel {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 30px;
-        }
-        .panel-header { display: flex; justify-content: space-between; align-items: center; }
-        .panel-header button { background: #1e2a3a; padding: 8px 16px; width: auto; }
-        #rounds_table { border-collapse: collapse; width: 100%; margin-top: 12px; font-size: 13px; }
-        #rounds_table th, #rounds_table td { border: 1px solid var(--border); padding: 6px 10px; text-align: center; color: var(--text); }
-        #rounds_table th { background: rgba(128,128,128,0.08); }
-        #rounds_table td:nth-child(2), #rounds_table th:nth-child(2) { text-align: left; font-weight: bold; }
-
-        .group-bar { margin-bottom:16px; }
-        .group-bar label { font-size:13px; color: var(--text-muted); margin-right:8px; }
-        .group-bar select { width:auto; display:inline-block; background: var(--card-bg); color: var(--text); border: 1px solid var(--border); }
+        .clickable-name:hover { text-decoration: underline; }
+        .badge-payout { background: var(--success-bg); color: var(--success); padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-left: 8px; display: inline-flex; align-items: center; gap: 4px; }
+        .btn-payout { width: 100%; background: #10b981; color: white; border: none; padding: 12px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-payout:hover { background: #059669; }
+        .btn-payout:disabled { background: #9ca3af; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo">
-            <div class="logo-icon">👥</div>
-            <div class="logo-text">EKUBE<span>MANAGEMENT SYSTEM</span></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="fa-solid fa-layer-group"></i></div>
+            <div class="brand-text">EQUB MGT</div>
         </div>
 
         <div class="section-label">MAIN</div>
-        <nav>
-            <a href="/index.html"><span class="icon">🏠</span> Dashboard</a>
-            <a href="/members.html" class="active"><span class="icon">👤</span> Members</a>
-            <a href="/payments.html"><span class="icon">💳</span> Payments</a>
-            <a href="/daily-collection.html"><span class="icon">📅</span> Daily Collection</a>
-            <a href="/weekly-collection.html"><span class="icon">🗓️</span> Weekly Collection</a>
-            <a href="/groups.html"><span class="icon">👥</span> Groups (Equb)</a>
-            <a href="/reports.html"><span class="icon">📊</span> Reports</a>
-            <a href="/export.html"><span class="icon">📤</span> Export</a>
-        </nav>
-
-        <div class="section-label">OTHERS</div>
-        <nav>
-            <a href="#"><span class="icon">🔔</span> Notifications</a>
-            <a href="/settings.html"><span class="icon">⚙️</span> Settings</a>
-        </nav>
-    </div>
+        <div class="sidebar-menu">
+            <a href="/index.html" class="menu-item"><i class="fa-solid fa-house"></i> Dashboard</a>
+            <a href="/members.html" class="menu-item active"><i class="fa-solid fa-users"></i> Members</a>
+            <a href="/payments.html" class="menu-item"><i class="fa-solid fa-wallet"></i> Payments</a>
+            <a href="/daily-collection.html" class="menu-item"><i class="fa-solid fa-calendar-day"></i> Daily Collection</a>
+            <a href="/weekly-collection.html" class="menu-item"><i class="fa-solid fa-calendar-week"></i> Weekly Collection</a>
+            <a href="/groups.html" class="menu-item"><i class="fa-solid fa-users-rectangle"></i> Groups (Equb)</a>
+            <a href="/winners.html" class="menu-item"><i class="fa-solid fa-trophy"></i> Payouts (Winners)</a>
+            <a href="/reports.html" class="menu-item"><i class="fa-solid fa-chart-pie"></i> Reports</a>
+            <a href="/export.html" class="menu-item"><i class="fa-solid fa-file-export"></i> Export</a>
+        </div>
+    </aside>
 
     <div class="main-content">
-        <div class="topbar">
-            <h1>Members</h1>
-            <input class="search" id="search_box" placeholder="Search members..." oninput="filterMembers()">
-            <button onclick="logout()">Log Out</button>
+        <header class="header">
+            <div class="header-left">
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search_box" placeholder="Search members..." oninput="filterMembers()">
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-power-off"></i> Logout</button>
+            </div>
+        </header>
+
+        <div class="container">
+            <h1 class="page-title">Member Management</h1>
+
+            <div class="toolbar">
+                <div class="filter-group">
+                    <label><i class="fa-solid fa-filter"></i> Viewing group:</label>
+                    <select id="group_selector" onchange="loadRoundsTable()"></select>
+                </div>
+                <button class="btn-primary" onclick="toggleAddMember()">
+                    <i class="fa-solid fa-plus"></i> Add New Member
+                </button>
+            </div>
+
+            <div class="panel">
+                <div class="add-form" id="add_member_form">
+                    <h3 style="margin-bottom: 16px; font-size: 16px;">Register Member</h3>
+                    <div class="add-form-grid">
+                        <input type="number" id="m_number" class="form-input" placeholder="Member No. (Auto)">
+                        <input type="text" id="m_name" class="form-input" placeholder="Full name">
+                        <input type="text" id="m_phone" class="form-input" placeholder="Phone Number">
+                        <select id="m_period">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                        </select>
+                        <select id="m_group"></select>
+                    </div>
+                    <button class="btn-primary" onclick="addMember()"><i class="fa-solid fa-floppy-disk"></i> Save Member</button>
+                    <div id="m_msg" class="msg"></div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table id="rounds_table"></table>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <div class="group-bar">
-            <label>Viewing group:</label>
-            <select id="group_selector" onchange="loadRoundsTable()"></select>
-        </div>
-
-        <div class="member-panel">
-            <div class="panel-header">
-                <h2 style="margin:0;">All Members</h2>
-                <button onclick="toggleAddMember()">+ Add Member</button>
+    <!-- MEMBER PAYMENT HISTORY MODAL -->
+    <div class="modal-overlay" id="history_modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal_name">Member Name</h3>
+                <button class="modal-close" onclick="closeHistory()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="stat-boxes">
+                <div class="stat-box">
+                    <div class="num" id="modal_days">0</div>
+                    <div class="label">Rounds Paid</div>
+                </div>
+                <div class="stat-box">
+                    <div class="num" id="modal_total" style="color: var(--success);">0</div>
+                    <div class="label">Total Contributed</div>
+                </div>
             </div>
 
-            <div id="add_member_form" style="display:none; margin: 12px 0;">
-                <input id="m_number" placeholder="Member No. (optional, auto if blank)" type="number">
-                <input id="m_name" placeholder="Full name">
-                <input id="m_phone" placeholder="Phone">
-                <select id="m_period">
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                </select>
-                <select id="m_group"></select>
-                <button onclick="addMember()">Save Member</button>
-                <div id="m_msg" class="msg"></div>
-            </div>
+            <div class="details-container" id="modal_details_list"></div>
 
-            <div style="overflow-x:auto;">
-                <table id="rounds_table"></table>
-            </div>
+            <button class="btn-payout" id="modal_payout_btn" onclick="markAsPaidOut()">
+                <i class="fa-solid fa-sack-dollar"></i> Give Payout to Member
+            </button>
         </div>
     </div>
 
 <script>
-function loadDarkModePreference() {
-    if (localStorage.getItem('darkMode') === 'true') {
-        document.body.classList.add('dark');
-    }
+if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+
+let globalGroupData = null; 
+let currentSelectedMemberId = null; 
+
+function getSavedPayouts() { return JSON.parse(localStorage.getItem('equb_payouts') || '{}'); }
+function savePayoutToStorage(memberId) {
+    let payouts = getSavedPayouts();
+    payouts[memberId] = true;
+    localStorage.setItem('equb_payouts', JSON.stringify(payouts));
 }
 
 async function checkAuth() {
     const res = await fetch('/me');
-    if (!res.ok) {
-        window.location.href = '/login.html';
-        return false;
-    }
+    if (!res.ok) { window.location.href = '/login.html'; return false; }
     return true;
 }
 
@@ -208,27 +263,25 @@ function filterMembers() {
     const query = document.getElementById('search_box').value.toLowerCase();
     const rows = document.querySelectorAll('#rounds_table tr');
     rows.forEach((row, index) => {
-        if (index === 0) return;
+        if (index === 0) return; 
         const nameCell = row.cells[1];
         if (!nameCell) return;
-        const name = nameCell.innerText.toLowerCase();
-        row.style.display = name.includes(query) ? '' : 'none';
+        row.style.display = nameCell.innerText.toLowerCase().includes(query) ? '' : 'none';
     });
 }
 
 function toggleAddMember() {
     const form = document.getElementById('add_member_form');
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
 }
 
 async function loadGroupOptions() {
     const res = await fetch('/groups');
     if (!res.ok) return;
     const groups = await res.json();
-    const selector = document.getElementById('group_selector');
-    const memberGroupSelect = document.getElementById('m_group');
-    selector.innerHTML = groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
-    memberGroupSelect.innerHTML = groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+    const options = groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+    document.getElementById('group_selector').innerHTML = options;
+    document.getElementById('m_group').innerHTML = options;
 }
 
 async function addMember() {
@@ -239,42 +292,128 @@ async function addMember() {
         group_id: document.getElementById('m_group').value,
         group_member_no: document.getElementById('m_number').value || undefined
     };
-    const res = await fetch('/members', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(body)
-    });
+    if(!body.full_name) return alert("Please enter a name.");
+    const res = await fetch('/members', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
     const data = await res.json();
-    document.getElementById('m_msg').innerText = 'Added: ' + data.full_name + ' (ID: ' + data.id + ')';
+    document.getElementById('m_msg').innerHTML = `<i class="fa-solid fa-circle-check"></i> Added: ${data.full_name}`;
+    
+    // clear form
+    document.getElementById('m_name').value = '';
+    document.getElementById('m_phone').value = '';
+    document.getElementById('m_number').value = '';
+    
     loadRoundsTable();
+    setTimeout(() => { document.getElementById('m_msg').innerHTML = ''; }, 3000);
 }
 
 async function loadRoundsTable() {
     const groupId = document.getElementById('group_selector').value;
+    if(!groupId) return;
+    
     const res = await fetch('/members-rounds?group_id=' + groupId);
     if (!res.ok) return;
     const data = await res.json();
+    
+    globalGroupData = data; 
+    const savedPayouts = getSavedPayouts();
 
-    let html = '<tr><th>ID</th><th>Name</th><th>Phone</th><th>Group</th>' + data.rounds.map(r => `<th>${r}</th>`).join('') + '<th>Action</th></tr>';
-    data.members.forEach(m => {
-        html += `<tr>
-            <td>${m.group_member_no || '-'}</td>
-            <td>${m.full_name}</td>
-            <td>${m.phone || '-'}</td>
-            <td>${m.group_name || '-'}</td>`;
-        data.rounds.forEach(r => {
-            const amt = (data.payments[m.id] && data.payments[m.id][r]) || 0;
-            html += amt > 0 ? `<td>${amt}</td>` : `<td>-</td>`;
+    let html = '<tr><th>ID (No.)</th><th>Member Name</th><th>Phone</th><th>Group</th>' + data.rounds.map(r => `<th>Round ${r}</th>`).join('') + '<th>Action</th></tr>';
+    
+    if(data.members.length === 0) {
+        html += `<tr><td colspan="${data.rounds.length + 5}" style="text-align: center; color: #6b7280; padding: 24px;">No members found in this group.</td></tr>`;
+    } else {
+        data.members.forEach(m => {
+            const hasReceivedPayout = savedPayouts[m.id] === true;
+            const payoutBadge = hasReceivedPayout ? `<span class="badge-payout"><i class="fa-solid fa-check"></i> Paid Out</span>` : '';
+            
+            html += `<tr>
+                        <td style="color: var(--text-muted); font-weight: 600;">${m.group_member_no || '-'}</td>
+                        <td class="clickable-name" style="font-weight: 600; color: var(--primary); cursor: pointer;" onclick="openHistory(${m.id}, '${m.full_name.replace(/'/g, "\\'")}')">
+                            <i class="fa-solid fa-circle-info" style="font-size:12px; margin-right:4px; color:var(--text-muted);"></i> ${m.full_name} ${payoutBadge}
+                        </td>
+                        <td style="color: var(--text-muted);">${m.phone || '-'}</td>
+                        <td style="color: var(--text-muted);">${m.group_name || '-'}</td>`;
+            
+            data.rounds.forEach(r => {
+                const amt = (data.payments[m.id] && data.payments[m.id][r]) || 0;
+                if(amt > 0) {
+                    html += `<td><span style="color: #10b981; font-weight: 600;">Birr ${amt.toLocaleString()}</span></td>`;
+                } else {
+                    html += `<td style="color: #9ca3af;">-</td>`;
+                }
+            });
+            
+            html += `<td>
+                        <button class="btn-edit" onclick="editMember(${m.id}, '${m.full_name.replace(/'/g, "\\'")}', ${m.group_member_no || 'null'})">
+                            <i class="fa-solid fa-pen"></i> Edit
+                        </button>
+                        <button class="btn-delete" onclick="deleteMember(${m.id})">
+                            <i class="fa-solid fa-trash-can"></i> Remove
+                        </button>
+                     </td></tr>`;
         });
-        html += `<td>
-            <button onclick="editMember(${m.id}, '${m.full_name.replace(/'/g, "\\'")}', ${m.group_member_no || 'null'})" style="width:auto; background:#2c7be5; padding:4px 10px; font-size:12px;">Edit</button>
-            <button onclick="deleteMember(${m.id})" style="width:auto; background:#d64545; padding:4px 10px; font-size:12px;">Remove</button>
-        </td>`;
-        html += '</tr>';
-    });
+    }
     document.getElementById('rounds_table').innerHTML = html;
 }
 
+// Modal Logic
+function openHistory(memberId, memberName) {
+    if(!globalGroupData) return;
+    currentSelectedMemberId = memberId;
+    
+    const payments = globalGroupData.payments[memberId] || {};
+    const rounds = globalGroupData.rounds || [];
+    let daysPaid = 0;
+    let totalAmount = 0;
+    let detailsHtml = '';
+
+    rounds.forEach(r => {
+        const amt = payments[r] || 0;
+        if(amt > 0) {
+            daysPaid++;
+            totalAmount += amt;
+            detailsHtml += `<div class="detail-item"><span class="round-name">Round ${r}</span><span class="round-amt">+ ${amt.toLocaleString()} Birr</span></div>`;
+        } else {
+            detailsHtml += `<div class="detail-item"><span class="round-name">Round ${r}</span><span class="round-missed">- Not Paid -</span></div>`;
+        }
+    });
+
+    if (rounds.length === 0) detailsHtml = `<div class="detail-item" style="justify-content:center; color:var(--text-muted);">No rounds recorded yet.</div>`;
+    
+    document.getElementById('modal_name').innerText = memberName;
+    document.getElementById('modal_days').innerText = daysPaid;
+    document.getElementById('modal_total').innerText = totalAmount.toLocaleString() + ' Birr';
+    document.getElementById('modal_details_list').innerHTML = detailsHtml;
+    
+    const savedPayouts = getSavedPayouts();
+    const btn = document.getElementById('modal_payout_btn');
+    
+    if (savedPayouts[memberId] === true) {
+        btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Payout Already Given';
+        btn.disabled = true;
+    } else {
+        btn.innerHTML = '<i class="fa-solid fa-sack-dollar"></i> Give Payout to Member';
+        btn.disabled = false;
+    }
+
+    document.getElementById('history_modal').style.display = 'flex';
+}
+
+function closeHistory() {
+    document.getElementById('history_modal').style.display = 'none';
+    currentSelectedMemberId = null;
+}
+
+function markAsPaidOut() {
+    if(!currentSelectedMemberId) return;
+    if(confirm("Are you sure you want to mark this member as having received the Equb payout?")) {
+        savePayoutToStorage(currentSelectedMemberId);
+        closeHistory();
+        loadRoundsTable();
+    }
+}
+
+// Edit and Delete
 async function editMember(id, currentName, currentNo) {
     const newName = prompt('Full name:', currentName);
     if (newName === null) return;
@@ -297,18 +436,12 @@ async function editMember(id, currentName, currentNo) {
 async function deleteMember(id) {
     if (!confirm('Remove this member? Their payment history will be kept.')) return;
     const res = await fetch('/members/' + id, { method: 'DELETE' });
-    if (res.ok) {
-        loadRoundsTable();
-    } else {
-        const data = await res.json();
-        alert(data.error || 'Failed to remove member');
-    }
+    if (res.ok) loadRoundsTable();
+    else alert('Failed to remove member');
 }
 
 (async () => {
-    loadDarkModePreference();
-    const ok = await checkAuth();
-    if (ok) {
+    if (await checkAuth()) {
         await loadGroupOptions();
         loadRoundsTable();
     }

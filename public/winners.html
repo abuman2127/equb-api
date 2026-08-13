@@ -159,6 +159,18 @@
 
 <script>
 
+async function deleteWinner(id) {
+    if (!confirm('Remove this winner record? This cannot be undone.')) return;
+    const res = await fetch('/payouts/' + id, { method: 'DELETE' });
+    if (res.ok) {
+        loadWinnersTable();
+    } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete winner record');
+    }
+}
+
+
 async function pickWinner() {
     const groupId = document.getElementById('group_selector').value;
     if (!groupId) return alert('Select a group first');
@@ -249,7 +261,7 @@ async function loadWinnersTable() {
     // If your backend doesn't have a /winners route yet, it handles the error cleanly.
     try {
         const res = await fetch(`/winners?group_id=${groupId}`);
-        let html = '<tr><th>Round / Cycle</th><th>Winner Name</th><th>Payout Amount</th><th>Date Received</th></tr>';
+        let html = '<tr><th>Round / Cycle</th><th>Winner Name</th><th>Payout Amount</th><th>Date Received</th><th>Action</th></tr>';
         
         if (!res.ok) {
             html += `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">
@@ -265,12 +277,13 @@ async function loadWinnersTable() {
             html += `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">No members have received a payout in this group yet.</td></tr>`;
         } else {
             data.forEach(w => {
-                html += `<tr>
-                            <td style="color: var(--text-muted); font-weight: 600;">Round ${w.round}</td>
-                            <td><span class="badge-trophy"><i class="fa-solid fa-award"></i> ${w.winner_name || w.name}</span></td>
-                            <td style="color: var(--success); font-weight: 700;">Birr ${Number(w.amount).toLocaleString()}</td>
-                            <td style="color: var(--text-muted);">${formatDate(w.date_won || w.created_at)}</td>
-                         </tr>`;
+                    html += `<tr>
+                <td style="color: var(--text-muted); font-weight: 600;">Round ${w.round}</td>
+                <td><span class="badge-trophy"><i class="fa-solid fa-award"></i> ${w.winner_name || w.name}</span></td>
+                <td style="color: var(--success); font-weight: 700;">Birr ${Number(w.amount).toLocaleString()}</td>
+                <td style="color: var(--text-muted);">${formatDate(w.date_won || w.created_at)}</td>
+                <td><button onclick="deleteWinner(${w.id})" style="background:var(--danger-bg); color:var(--danger); border:none; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer;"><i class="fa-solid fa-trash-can"></i> Delete</button></td>
+             </tr>`;
             });
         }
         document.getElementById('winners_table').innerHTML = html;

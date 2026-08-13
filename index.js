@@ -414,6 +414,44 @@ app.get('/members-rounds', requireLogin, async (req, res) => {
     }
 });
 
+app.get('/members/:id/detail', requireLogin, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const memberResult = await pool.query(
+            `SELECT m.id, m.full_name, m.phone, m.period_type, m.group_member_no, g.name AS group_name
+             FROM members m LEFT JOIN groups g ON m.group_id = g.id
+             WHERE m.id = $1`,
+            [id]
+        );
+        if (memberResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Member not found' });
+        }
+        const member = memberResult.rows[0];
+
+        const paymentsResult = await pool.query(
+            `SELECT id, amount, paid_at, period_type, status
+             FROM payments WHERE member_id = $1 ORDER BY paid_at DESC`,
+            [id]
+        );
+
+        const dailyCount = paymentsResult.rows.filter(p => p.period_type === 'daily').length;
+        const weeklyCount = paymentsResult.rows.filter(p => p.period_type === 'weekly').length;
+        const totalPaid = paymentsResult.rows.reduce((sum, p) => sum + Number(p.amount), 0);
+
+        res.json({
+            member,
+            payments: paymentsResult.rows,
+            daily_count: dailyCount,
+            weekly_count: weeklyCount,
+            total_paid: totalPaid
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
 app.get('/collection-overview', requireLogin, async (req, res) => {
     try {
         const result = await pool.query(

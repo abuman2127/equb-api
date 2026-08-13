@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Member Detail - Equb Manager</title>
+    <style>
+        :root {
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --text: #1a2332;
+            --text-muted: #6b7280;
+            --border: #e0e4e8;
+        }
+        body.dark {
+            --bg: #12161f;
+            --card-bg: #1a2332;
+            --text: #e5e9f0;
+            --text-muted: #9aa4b8;
+            --border: #2a3547;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar {
+            width: 220px; background: #1a2332; color: white; height: 100vh;
+            position: fixed; padding: 20px 0; overflow-y: auto;
+        }
+        .sidebar .logo { display: flex; align-items: center; gap: 12px; padding: 0 20px 20px; }
+        .sidebar .logo-icon {
+            width: 40px; height: 40px; background: #2c7be5; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+        }
+        .sidebar .logo-text { font-weight: bold; font-size: 16px; line-height: 1.3; }
+        .sidebar .logo-text span { display: block; font-size: 10px; font-weight: normal; color: #8b95a5; letter-spacing: 0.5px; }
+        .sidebar .section-label { padding: 16px 20px 6px; font-size: 11px; color: #6b7590; letter-spacing: 1px; }
+        .sidebar nav { margin-top: 4px; }
+        .sidebar a {
+            display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+            color: #c5cdd8; text-decoration: none; font-size: 14px; margin: 2px 10px; border-radius: 8px;
+        }
+        .sidebar a .icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar a.active { background: #2c7be5; color: white; }
+        .sidebar a:hover { background: #2a3547; }
+
+        .main-content { margin-left: 220px; padding: 24px; width: 100%; }
+
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .topbar h1 { margin: 0; font-size: 20px; color: var(--text); }
+        .topbar button {
+            width: auto; background: #d64545; padding: 8px 16px; border: none;
+            border-radius: 6px; color: white; cursor: pointer;
+        }
+        .back-link { color: #2c7be5; text-decoration: none; font-size: 14px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        td, th { border: 1px solid var(--border); padding: 8px; text-align: left; color: var(--text); }
+
+        .profile-card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
+            padding: 20px; margin-bottom: 20px;
+        }
+        .profile-card h2 { margin-top: 0; }
+        .profile-row { display: flex; gap: 30px; flex-wrap: wrap; margin-top: 10px; }
+        .profile-item .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+        .profile-item .value { font-size: 16px; font-weight: bold; margin-top: 2px; }
+
+        .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+        .stat-card .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+        .stat-card .value { font-size: 22px; font-weight: bold; margin-top: 4px; }
+
+        .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+        .panel h2 { margin-top: 0; }
+
+        .badge-daily { color: #2563eb; background: #e8f0fe; padding: 3px 10px; border-radius: 12px; font-size: 12px; }
+        .badge-weekly { color: #7c3aed; background: #f2e9fe; padding: 3px 10px; border-radius: 12px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">👥</div>
+            <div class="logo-text">EKUBE<span>MANAGEMENT SYSTEM</span></div>
+        </div>
+
+        <div class="section-label">MAIN</div>
+        <nav>
+            <a href="/index.html"><span class="icon">🏠</span> Dashboard</a>
+            <a href="/members.html"><span class="icon">👤</span> Members</a>
+            <a href="/payments.html"><span class="icon">💳</span> Payments</a>
+            <a href="/daily-collection.html"><span class="icon">📅</span> Daily Collection</a>
+            <a href="/weekly-collection.html"><span class="icon">🗓️</span> Weekly Collection</a>
+            <a href="/groups.html"><span class="icon">👥</span> Groups (Equb)</a>
+            <a href="/reports.html"><span class="icon">📊</span> Reports</a>
+            <a href="/export.html"><span class="icon">📤</span> Export</a>
+        </nav>
+
+        <div class="section-label">OTHERS</div>
+        <nav>
+            <a href="#"><span class="icon">🔔</span> Notifications</a>
+            <a href="/settings.html"><span class="icon">⚙️</span> Settings</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <div>
+                <a href="javascript:history.back()" class="back-link">&larr; Back</a>
+                <h1 id="page_title">Member Detail</h1>
+            </div>
+            <button onclick="logout()">Log Out</button>
+        </div>
+
+        <div class="profile-card">
+            <h2 id="m_name">-</h2>
+            <div class="profile-row">
+                <div class="profile-item"><div class="label">Member No.</div><div class="value" id="m_no">-</div></div>
+                <div class="profile-item"><div class="label">Phone</div><div class="value" id="m_phone">-</div></div>
+                <div class="profile-item"><div class="label">Group</div><div class="value" id="m_group">-</div></div>
+                <div class="profile-item"><div class="label">Period Type</div><div class="value" id="m_period">-</div></div>
+            </div>
+        </div>
+
+        <div class="stat-cards">
+            <div class="stat-card"><div class="label">Total Paid</div><div class="value" id="stat_total">-</div></div>
+            <div class="stat-card"><div class="label">Daily Payments</div><div class="value" id="stat_daily">-</div></div>
+            <div class="stat-card"><div class="label">Weekly Payments</div><div class="value" id="stat_weekly">-</div></div>
+        </div>
+
+        <div class="panel">
+            <h2>Payment History</h2>
+            <table id="history_table"></table>
+        </div>
+    </div>
+
+<script>
+function loadDarkModePreference() {
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark');
+    }
+}
+
+async function checkAuth() {
+    const res = await fetch('/me');
+    if (!res.ok) {
+        window.location.href = '/login.html';
+        return false;
+    }
+    return true;
+}
+
+async function logout() {
+    await fetch('/logout', { method: 'POST' });
+    window.location.href = '/login.html';
+}
+
+function getMemberId() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('id');
+}
+
+async function loadMemberDetail() {
+    const id = getMemberId();
+    if (!id) {
+        document.getElementById('m_name').innerText = 'No member selected';
+        return;
+    }
+    const res = await fetch('/members/' + id + '/detail');
+    if (!res.ok) {
+        document.getElementById('m_name').innerText = 'Member not found';
+        return;
+    }
+    const data = await res.json();
+
+    document.getElementById('page_title').innerText = data.member.full_name;
+    document.getElementById('m_name').innerText = data.member.full_name;
+    document.getElementById('m_no').innerText = data.member.group_member_no || '-';
+    document.getElementById('m_phone').innerText = data.member.phone || '-';
+    document.getElementById('m_group').innerText = data.member.group_name || '-';
+    document.getElementById('m_period').innerText = data.member.period_type;
+
+    document.getElementById('stat_total').innerText = data.total_paid.toLocaleString() + ' Birr';
+    document.getElementById('stat_daily').innerText = data.daily_count + ' days';
+    document.getElementById('stat_weekly').innerText = data.weekly_count + ' weeks';
+
+    let html = '<tr><th>Date</th><th>Amount</th><th>Type</th><th>Status</th></tr>';
+    data.payments.forEach(p => {
+        const badge = p.period_type === 'daily'
+            ? `<span class="badge-daily">Daily</span>`
+            : `<span class="badge-weekly">Weekly</span>`;
+        html += `<tr>
+            <td>${new Date(p.paid_at).toLocaleDateString()}</td>
+            <td>${Number(p.amount).toLocaleString()} Birr</td>
+            <td>${badge}</td>
+            <td>${p.status}</td>
+        </tr>`;
+    });
+    document.getElementById('history_table').innerHTML = html;
+}
+
+(async () => {
+    loadDarkModePreference();
+    const ok = await checkAuth();
+    if (ok) loadMemberDetail();
+})();
+</script>
+</body>
+</html>

@@ -139,6 +139,9 @@
                     <label><i class="fa-solid fa-filter"></i> Select Group:</label>
                     <select id="group_selector" onchange="loadWinnersTable()"></select>
                 </div>
+                <button class="btn-action" onclick="pickWinner()" style="background: var(--success-bg); color: var(--success);">
+                    <i class="fa-solid fa-dice"></i> Select Winner
+                </button>
             </div>
 
             <div class="panel">
@@ -155,6 +158,22 @@
     </div>
 
 <script>
+
+async function pickWinner() {
+    const groupId = document.getElementById('group_selector').value;
+    if (!groupId) return alert('Select a group first');
+    if (!confirm("Randomly select this round's winner?")) return;
+
+    const res = await fetch(`/groups/${groupId}/select-winner`, { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) {
+        alert(`🎉 Winner: ${data.winner}\nRound ${data.round}\nAmount: ${Number(data.amount).toLocaleString()} Birr`);
+        loadWinnersTable();
+    } else {
+        alert(data.error || 'Failed to select winner');
+    }
+}
+
 // --- Ethiopian Calendar Logic ---
 const ETHIOPIAN_MONTHS = ['Meskerem','Tikimt','Hidar','Tahsas','Tir','Yekatit','Megabit','Miazia','Ginbot','Sene','Hamle','Nehase','Pagume'];
 function gregorianToEthiopian(gDate) {

@@ -451,6 +451,28 @@ app.get('/members/:id/detail', requireLogin, async (req, res) => {
     }
 });
 
+app.get('/winners', requireLogin, async (req, res) => {
+    const { group_id } = req.query;
+    if (!group_id) {
+        return res.json([]);
+    }
+    try {
+        const result = await pool.query(
+            `SELECT po.round_number AS round, m.full_name AS winner_name, po.amount, po.payout_date AS date_won
+             FROM payouts po
+             JOIN members m ON po.member_id = m.id
+             JOIN cycles c ON po.cycle_id = c.id
+             WHERE c.group_id = $1
+             ORDER BY po.round_number`,
+            [group_id]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 
 app.get('/collection-overview', requireLogin, async (req, res) => {
     try {

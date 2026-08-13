@@ -361,7 +361,7 @@ async function loadRecent() {
             const time = formatDate(p.paid_at); // Uses EC/GC conversion!
             html += `<tr>
                 <td style="color: var(--text-muted); font-weight:600;">${p.member_id}</td>
-                <td style="font-weight: 600; color: var(--text);">${p.full_name}</td>
+                <td style="font-weight: 600;"><a href="/member-detail.html?id=${p.member_id}" style="color: var(--text); text-decoration: underline;">${p.full_name}</a></td>
                 <td style="color: var(--text-muted);">${p.group_name || '-'}</td>
                 <td style="color: var(--success); font-weight: 700;">${Number(p.amount).toLocaleString()} Birr</td>
                 <td><span style="background: var(--bg); padding:4px 8px; border-radius:6px; font-size:12px; border:1px solid var(--border);">${p.period_type}</span></td>

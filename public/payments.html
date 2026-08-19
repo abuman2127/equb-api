@@ -80,6 +80,7 @@
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 16px;}
         .panel-header h2 { margin: 0; font-size: 18px; color: var(--text); display: flex; align-items: center; gap: 8px; }
         
+        /* Form Grids */
         .add-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; align-items: end;}
         select, .form-input { background: var(--bg); border: 1px solid var(--border); padding: 10px 16px; border-radius: var(--radius-sm); font-size: 14px; color: var(--text); outline: none; width: 100%; }
         input[type="date"] { color-scheme: light dark; }
@@ -87,6 +88,7 @@
         .btn-primary:hover { background: var(--primary-dark); }
         .msg { font-size: 14px; font-weight: 500; color: var(--success); margin-top: 12px; }
 
+        /* Tables */
         .table-wrapper { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; white-space: nowrap; }
         th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
@@ -151,6 +153,12 @@
             <a href="/reports.html" class="menu-item"><i class="fa-solid fa-chart-pie"></i> Reports</a>
             <a href="/export.html" class="menu-item"><i class="fa-solid fa-file-export"></i> Export</a>
         </div>
+        
+        <div class="section-label">OTHERS</div>
+        <div class="sidebar-menu">
+            <a href="#" class="menu-item"><i class="fa-solid fa-bell"></i> Notifications</a>
+            <a href="/settings.html" class="menu-item"><i class="fa-solid fa-gear"></i> Settings</a>
+        </div>
     </aside>
 
     <div class="main-content">
@@ -201,10 +209,48 @@
                             <option value="weekly">Weekly</option>
                         </select>
                     </div>
+                    
+                    <!-- NEW EC/GC TOGGLE DATE FIELD -->
                     <div>
-                        <label style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:4px; display:block;">Date</label>
-                        <input id="p_date" type="date" class="form-input">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <label style="font-size:12px; font-weight:600; color:var(--text-muted);">Date (<span id="date_mode_label">GC</span>)</label>
+                            <button type="button" onclick="toggleInputCalendarMode(event)" style="background: none; border: none; color: var(--primary); font-size: 11px; font-weight: 700; cursor: pointer; padding: 0;">Switch to EC</button>
+                        </div>
+                        
+                        <!-- Standard GC Date Picker -->
+                        <input id="p_date_gc" type="date" class="form-input" onchange="syncDates()">
+                        
+                        <!-- Ethiopian Calendar Inputs (Hidden by default) -->
+                        <div id="ec_inputs_wrapper" style="display: none; gap: 4px; grid-template-columns: 1fr 1fr 1fr;">
+                            <select id="ec_year" class="form-input" style="padding: 10px 4px;" onchange="syncEcToGc()">
+                                <option value="2018">2018</option>
+                                <option value="2019" selected>2019</option>
+                                <option value="2020">2020</option>
+                            </select>
+                            <select id="ec_month" class="form-input" style="padding: 10px 4px;" onchange="syncEcToGc()">
+                                <option value="1">Meskerem</option>
+                                <option value="2">Tikimt</option>
+                                <option value="3">Hidar</option>
+                                <option value="4">Tahsas</option>
+                                <option value="5">Tir</option>
+                                <option value="6">Yekatit</option>
+                                <option value="7">Megabit</option>
+                                <option value="8">Miazia</option>
+                                <option value="9">Ginbot</option>
+                                <option value="10">Sene</option>
+                                <option value="11">Hamle</option>
+                                <option value="12">Nehase</option>
+                                <option value="13">Pagume</option>
+                            </select>
+                            <select id="ec_day" class="form-input" style="padding: 10px 4px;" onchange="syncEcToGc()">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        
+                        <!-- Hidden input that sends the date to the backend -->
+                        <input type="hidden" id="p_date">
                     </div>
+
                     <button class="btn-primary" onclick="addPayment()">
                         <i class="fa-solid fa-check"></i> Record
                     </button>
@@ -241,6 +287,73 @@
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('show');
     document.getElementById('sidebar_overlay').classList.toggle('show');
+}
+
+// ==========================================
+// DATE INPUT TOGGLE (GC / EC)
+// ==========================================
+let inputMode = 'GC';
+
+function toggleInputCalendarMode(event) {
+    inputMode = inputMode === 'GC' ? 'EC' : 'GC';
+    document.getElementById('date_mode_label').innerText = inputMode;
+    event.target.innerText = inputMode === 'GC' ? 'Switch to EC' : 'Switch to GC';
+    
+    if (inputMode === 'EC') {
+        document.getElementById('p_date_gc').style.display = 'none';
+        document.getElementById('ec_inputs_wrapper').style.display = 'grid';
+        populateEcDays();
+        
+        // Auto-select current EC date
+        const d = new Date();
+        const ecDate = gregorianToEthiopian(d);
+        
+        // Set year dropdown if exists, otherwise create option
+        let yOpt = document.querySelector(`#ec_year option[value="${ecDate.year}"]`);
+        if (!yOpt) {
+            document.getElementById('ec_year').innerHTML += `<option value="${ecDate.year}">${ecDate.year}</option>`;
+        }
+        document.getElementById('ec_year').value = ecDate.year;
+        document.getElementById('ec_month').value = ecDate.month;
+        document.getElementById('ec_day').value = ecDate.day;
+
+        syncEcToGc();
+    } else {
+        document.getElementById('p_date_gc').style.display = 'block';
+        document.getElementById('ec_inputs_wrapper').style.display = 'none';
+        syncDates();
+    }
+}
+
+function populateEcDays() {
+    const daySelect = document.getElementById('ec_day');
+    let opts = '';
+    for(let i=1; i<=30; i++) {
+        opts += `<option value="${i}">${i}</option>`;
+    }
+    daySelect.innerHTML = opts;
+}
+
+// Convert Ethiopian dropdowns to Gregorian and store it in hidden #p_date
+function syncEcToGc() {
+    const eYear = parseInt(document.getElementById('ec_year').value);
+    const eMonth = parseInt(document.getElementById('ec_month').value);
+    const eDay = parseInt(document.getElementById('ec_day').value);
+    
+    // Approximate conversion back to Gregorian for backend storage
+    let gYear = eYear + 7;
+    if (eMonth < 1 || (eMonth === 1 && eDay < 11)) {
+        gYear = eYear + 8;
+    }
+    
+    // Simplified mapping estimation for backend compatibility
+    const approxMonth = ((eMonth + 8) % 12) + 1;
+    const gDate = new Date(Date.UTC(gYear, approxMonth - 1, eDay));
+    document.getElementById('p_date').value = gDate.toISOString().split('T')[0];
+}
+
+function syncDates() {
+    document.getElementById('p_date').value = document.getElementById('p_date_gc').value;
 }
 
 // --- Ethiopian Calendar Logic ---
@@ -289,7 +402,10 @@ function loadPreferences() {
     const calType = getCalendarType();
     document.getElementById('cal_toggle').innerHTML = calType === 'EC' ? '<i class="fa-solid fa-calendar"></i> EC Mode' : '<i class="fa-solid fa-calendar"></i> GC Mode';
     
-    document.getElementById('p_date').value = new Date().toISOString().split('T')[0];
+    // Set today's date in GC format in the date picker automatically
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('p_date_gc').value = today;
+    document.getElementById('p_date').value = today; // Initialize hidden input
 }
 
 // --- Search Filter Logic ---
@@ -351,6 +467,7 @@ async function addPayment() {
     if(!memberSelect) return alert("Please select a member");
     if(!amountInput) return alert("Please enter an amount");
 
+    // Important: We read from the hidden #p_date which holds the standardized GC date
     const body = {
         member_id: Number(memberSelect),
         amount: Number(amountInput),

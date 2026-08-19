@@ -47,7 +47,7 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
 
-        .sidebar { width: 260px; background-color: var(--sidebar); border-right: 1px solid var(--border); height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; display: flex; flex-direction: column; }
+        .sidebar { width: 260px; background-color: var(--sidebar); border-right: 1px solid var(--border); height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; display: flex; flex-direction: column; transition: transform 0.3s ease; }
         .brand { height: 72px; display: flex; align-items: center; padding: 0 24px; gap: 12px; border-bottom: 1px solid var(--border); }
         .brand-icon { width: 32px; height: 32px; background: var(--primary); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; }
         .brand-text { font-weight: 700; font-size: 16px; color: var(--text); }
@@ -102,9 +102,36 @@
 
         .toolbar { display: flex; align-items: center; gap: 12px; background: var(--bg); padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); width: max-content; }
         .toolbar label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+
+        /* ================================================== */
+        /* MOBILE RESPONSIVE PATCH */
+        /* ================================================== */
+        .mobile-toggle { display: none; background: transparent; border: none; color: var(--text); font-size: 22px; cursor: pointer; padding: 0; margin-right: 12px; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 95; backdrop-filter: blur(2px); }
+        .sidebar-overlay.show { display: block; }
+        
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0 !important; padding: 16px !important; width: 100%; }
+            .mobile-toggle { display: inline-block; }
+            
+            .header { flex-direction: column; align-items: flex-start; gap: 16px; height: auto !important; padding: 16px !important; }
+            .header-left, .header-right { width: 100%; justify-content: flex-start; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;}
+            .header-left { display: flex; align-items: center; }
+            .search-bar { width: 100% !important; flex: 1; }
+            
+            .toolbar, .filter-group { flex-direction: column; align-items: stretch !important; gap: 12px; width: 100%;}
+            select, .form-input, input[type="date"] { width: 100% !important; min-width: unset; }
+            .add-form-grid { grid-template-columns: 1fr; gap: 12px;}
+            .btn-primary, .btn-logout, .btn-action { width: 100%; text-align: center; justify-content: center; display: flex; }
+        }
     </style>
 </head>
 <body>
+
+    <!-- OVERLAY FOR MOBILE -->
+    <div class="sidebar-overlay" id="sidebar_overlay" onclick="toggleSidebar()"></div>
 
     <aside class="sidebar" id="sidebar">
         <div class="brand">
@@ -124,17 +151,13 @@
             <a href="/reports.html" class="menu-item"><i class="fa-solid fa-chart-pie"></i> Reports</a>
             <a href="/export.html" class="menu-item"><i class="fa-solid fa-file-export"></i> Export</a>
         </div>
-
-        <div class="section-label">OTHERS</div>
-        <div class="sidebar-menu">
-            <a href="#" class="menu-item"><i class="fa-solid fa-bell"></i> Notifications</a>
-            <a href="/settings.html" class="menu-item"><i class="fa-solid fa-gear"></i> Settings</a>
-        </div>
     </aside>
 
     <div class="main-content">
         <header class="header">
             <div class="header-left">
+                <!-- HAMBURGER ICON -->
+                <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
                 <div class="search-bar">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="search_box" placeholder="Search payments..." oninput="filterPayments()">
@@ -150,6 +173,7 @@
         <div class="container">
             <h1 class="page-title">Manage Payments</h1>
 
+            <!-- Record Payment Panel -->
             <div class="panel">
                 <div class="panel-header">
                     <h2><i class="fa-solid fa-money-bill-wave" style="color: var(--success);"></i> Record New Payment</h2>
@@ -178,12 +202,8 @@
                         </select>
                     </div>
                     <div>
-                        <label style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:4px; display:block;">Date (Ethiopian)</label>
-                        <div style="display:flex; gap:4px;">
-                            <select id="ec_day" class="form-input"></select>
-                            <select id="ec_month" class="form-input"></select>
-                            <select id="ec_year" class="form-input"></select>
-                        </div>
+                        <label style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:4px; display:block;">Date</label>
+                        <input id="p_date" type="date" class="form-input">
                     </div>
                     <button class="btn-primary" onclick="addPayment()">
                         <i class="fa-solid fa-check"></i> Record
@@ -192,6 +212,7 @@
                 <div id="p_msg" class="msg"></div>
             </div>
 
+            <!-- Recent Payments Panel -->
             <div class="panel">
                 <div class="panel-header">
                     <h2><i class="fa-solid fa-clock-rotate-left" style="color: var(--primary);"></i> Recent Payments</h2>
@@ -205,15 +226,25 @@
                 </div>
 
                 <div class="table-wrapper">
-                    <table id="recent_table"></table>
+                    <table id="recent_table">
+                        <!-- Populated by JS -->
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
 <script>
-const ETHIOPIAN_MONTHS = ['Meskerem','Tikimt','Hidar','Tahsas','Tir','Yekatit','Megabit','Miazia','Ginbot','Sene','Hamle','Nehase','Pagume'];
+// ==========================================
+// MOBILE MENU TOGGLE
+// ==========================================
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('show');
+    document.getElementById('sidebar_overlay').classList.toggle('show');
+}
 
+// --- Ethiopian Calendar Logic ---
+const ETHIOPIAN_MONTHS = ['Meskerem','Tikimt','Hidar','Tahsas','Tir','Yekatit','Megabit','Miazia','Ginbot','Sene','Hamle','Nehase','Pagume'];
 function gregorianToEthiopian(gDate) {
     const jdn = Math.floor((gDate.getTime() / 86400000) + 2440587.5 + 0.5);
     const ethEpoch = 1723856;
@@ -224,61 +255,25 @@ function gregorianToEthiopian(gDate) {
     const eDay = (n % 30) + 1;
     return { year: eYear, month: eMonth, day: eDay, monthName: ETHIOPIAN_MONTHS[eMonth - 1] };
 }
-
-function ethiopianToGregorian(eYear, eMonth, eDay) {
-    const ethEpoch = 1723856;
-    const jdn = ethEpoch + 365 * eYear + Math.floor(eYear / 4) + 30 * (eMonth - 1) + (eDay - 1);
-    const gDate = new Date((jdn - 2440587.5 - 0.5) * 86400000);
-    return gDate;
-}
-
 function formatEthiopian(gDateString) {
-    if (!gDateString) return '-';
+    if(!gDateString) return '-';
     const d = new Date(gDateString);
     const e = gregorianToEthiopian(d);
     return `${e.day} ${e.monthName} ${e.year}`;
-}
-
+} 
 function toggleCalendar() {
     const current = localStorage.getItem('calendarType') || 'GC';
     localStorage.setItem('calendarType', current === 'GC' ? 'EC' : 'GC');
-    location.reload();
+    location.reload(); 
 }
-
 function getCalendarType() { return localStorage.getItem('calendarType') || 'GC'; }
-
 function formatDate(gDateString) {
-    if (!gDateString) return '-';
+    if(!gDateString) return '-';
     if (getCalendarType() === 'EC') return formatEthiopian(gDateString);
-    return new Date(gDateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return new Date(gDateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
 }
 
-function populateEthiopianPicker() {
-    const daySelect = document.getElementById('ec_day');
-    const monthSelect = document.getElementById('ec_month');
-    const yearSelect = document.getElementById('ec_year');
-
-    for (let d = 1; d <= 30; d++) daySelect.innerHTML += `<option value="${d}">${d}</option>`;
-    ETHIOPIAN_MONTHS.forEach((m, i) => monthSelect.innerHTML += `<option value="${i + 1}">${m}</option>`);
-
-    const todayEC = gregorianToEthiopian(new Date());
-    for (let y = todayEC.year - 2; y <= todayEC.year + 1; y++) {
-        yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
-    }
-
-    daySelect.value = todayEC.day;
-    monthSelect.value = todayEC.month;
-    yearSelect.value = todayEC.year;
-}
-
-function getSelectedGregorianDate() {
-    const day = Number(document.getElementById('ec_day').value);
-    const month = Number(document.getElementById('ec_month').value);
-    const year = Number(document.getElementById('ec_year').value);
-    const gDate = ethiopianToGregorian(year, month, day);
-    return gDate.toISOString().split('T')[0];
-}
-
+// --- Theme Logic ---
 function toggleDarkMode() {
     document.body.classList.toggle('dark');
     const isDark = document.body.classList.contains('dark');
@@ -293,8 +288,11 @@ function loadPreferences() {
     }
     const calType = getCalendarType();
     document.getElementById('cal_toggle').innerHTML = calType === 'EC' ? '<i class="fa-solid fa-calendar"></i> EC Mode' : '<i class="fa-solid fa-calendar"></i> GC Mode';
+    
+    document.getElementById('p_date').value = new Date().toISOString().split('T')[0];
 }
 
+// --- Search Filter Logic ---
 function filterPayments() {
     const query = document.getElementById('search_box').value.toLowerCase();
     const rows = document.querySelectorAll('#recent_table tr');
@@ -306,6 +304,7 @@ function filterPayments() {
     });
 }
 
+// --- Backend API Logic ---
 async function checkAuth() {
     const res = await fetch('/me');
     if (!res.ok) { window.location.href = '/login.html'; return false; }
@@ -349,14 +348,14 @@ async function addPayment() {
     const memberSelect = document.getElementById('p_member_select').value;
     const amountInput = document.getElementById('p_amount').value;
     
-    if (!memberSelect) return alert("Please select a member");
-    if (!amountInput) return alert("Please enter an amount");
+    if(!memberSelect) return alert("Please select a member");
+    if(!amountInput) return alert("Please enter an amount");
 
     const body = {
         member_id: Number(memberSelect),
         amount: Number(amountInput),
         period_type: document.getElementById('p_period').value,
-        paid_at: getSelectedGregorianDate()
+        paid_at: document.getElementById('p_date').value || undefined
     };
     
     const res = await fetch('/payments', {
@@ -371,7 +370,7 @@ async function addPayment() {
     if (res.ok) {
         msgDiv.style.color = 'var(--success)';
         msgDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> Payment recorded: ${data.amount} Birr`;
-        document.getElementById('p_amount').value = '';
+        document.getElementById('p_amount').value = ''; 
         loadRecent();
     } else {
         msgDiv.style.color = 'var(--danger)';
@@ -393,10 +392,10 @@ async function loadRecent() {
         html += `<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">No recent payments found.</td></tr>`;
     } else {
         data.forEach(p => {
-            const time = formatDate(p.paid_at);
+            const time = formatDate(p.paid_at); 
             html += `<tr>
                 <td style="color: var(--text-muted); font-weight:600;">${p.member_id}</td>
-                <td style="font-weight: 600;"><a href="/member-detail.html?id=${p.member_id}" style="color: var(--text); text-decoration: underline;">${p.full_name}</a></td>
+                <td style="font-weight: 600;"><a href="/members.html" style="color: var(--primary); text-decoration: underline;">${p.full_name}</a></td>
                 <td style="color: var(--text-muted);">${p.group_name || '-'}</td>
                 <td style="color: var(--success); font-weight: 700;">${Number(p.amount).toLocaleString()} Birr</td>
                 <td><span style="background: var(--bg); padding:4px 8px; border-radius:6px; font-size:12px; border:1px solid var(--border);">${p.period_type}</span></td>
@@ -433,7 +432,6 @@ async function deletePayment(id) {
 
 (async () => {
     loadPreferences();
-    populateEthiopianPicker();
     if (await checkAuth()) {
         await loadGroupOptions();
         loadRecent();

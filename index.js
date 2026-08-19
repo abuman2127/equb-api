@@ -133,13 +133,6 @@ app.post('/members', requireLogin, async (req, res) => {
     try {
         let memberNo;
         if (group_member_no) {
-            const existing = await pool.query(
-                `SELECT id FROM members WHERE group_id = $1 AND group_member_no = $2 AND is_active = true`,
-                [group_id, group_member_no]
-            );
-            if (existing.rows.length > 0) {
-                return res.status(400).json({ error: 'That number is already used in this group' });
-            }
             memberNo = group_member_no;
         } else {
             const maxResult = await pool.query(
@@ -160,44 +153,23 @@ app.post('/members', requireLogin, async (req, res) => {
     }
 });
 
-    app.put('/members/:id', requireLogin, async (req, res) => {
-        const { id } = req.params;
-        const { full_name, phone, group_member_no } = req.body;
-        try {
-            const result = await pool.query(
-                `UPDATE members SET full_name = $1, phone = $2, group_member_no = $3 WHERE id = $4 RETURNING *`,
-                [full_name, phone, group_member_no || null, id]
-            );
-            if (result.rows.length === 0) {
-                return res.status(404).json({ error: 'Member not found' });
-            }
-            res.json(result.rows[0]);
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: err.message });
-        }
-    });
-
-app.post('/members', requireLogin, async (req, res) => {
-    const { full_name, phone, period_type, group_id } = req.body;
+app.put('/members/:id', requireLogin, async (req, res) => {
+    const { id } = req.params;
+    const { full_name, phone, group_member_no } = req.body;
     try {
-        const maxResult = await pool.query(
-            `SELECT COALESCE(MAX(group_member_no), 0) AS max_no FROM members WHERE group_id = $1`,
-            [group_id]
-        );
-        const nextNo = Number(maxResult.rows[0].max_no) + 1;
-
         const result = await pool.query(
-            `INSERT INTO members (full_name, phone, period_type, group_id, group_member_no) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-            [full_name, phone, period_type, group_id, nextNo]
+            `UPDATE members SET full_name = $1, phone = $2, group_member_no = $3 WHERE id = $4 RETURNING *`,
+            [full_name, phone, group_member_no || null, id]
         );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Member not found' });
+        }
         res.json(result.rows[0]);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
     }
 });
-
 app.post('/payments', requireLogin, async (req, res) => {
     const { member_id, amount, period_type, paid_at } = req.body;
     try {
@@ -921,11 +893,14 @@ app.post('/groups/:groupId/select-winner', requireLogin, requireAdmin, async (re
             `SELECT m.id, m.full_name
              FROM members m
              WHERE m.group_id = $1 AND m.is_active = true
-               AND m.id NOT IN (
-                   SELECT member_id FROM payouts WHERE cycle_id = $2
-               )`,
-            [groupId, cycleId]
-        );
+             AND m.group_member_no NOT IN (
+             SELECT COALESCE(m2.group_member_no, -1)
+             FROM payouts po
+             JOIN members m2 ON po.member_id = m2.id
+             WHERE po.cycle_id = $2 AND m2.group_id = $1
+       )`,
+    [groupId, cycleId]
+);
 
         if (eligibleResult.rows.length === 0) {
             return res.status(400).json({ error: 'All members have already won this cycle' });

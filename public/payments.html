@@ -82,9 +82,9 @@
         
         /* Form Grids */
         .add-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; align-items: end;}
-        select, .form-input { background: var(--bg); border: 1px solid var(--border); padding: 10px 16px; border-radius: var(--radius-sm); font-size: 14px; color: var(--text); outline: none; width: 100%; }
+        select, .form-input { background: var(--bg); border: 1px solid var(--border); padding: 10px 16px; border-radius: var(--radius-sm); font-size: 14px; color: var(--text); outline: none; width: 100%; font-family: inherit; }
         input[type="date"] { color-scheme: light dark; }
-        .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition); height: 40px;}
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition); height: 42px;}
         .btn-primary:hover { background: var(--primary-dark); }
         .msg { font-size: 14px; font-weight: 500; color: var(--success); margin-top: 12px; }
 
@@ -106,7 +106,32 @@
         .toolbar label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
 
         /* ================================================== */
-        /* MOBILE RESPONSIVE PATCH */
+        /* CUSTOM EC POPUP CALENDAR STYLES                    */
+        /* ================================================== */
+        .ec-calendar-wrapper { position: relative; width: 100%; display: none; }
+        .ec-calendar-input {
+            background: var(--bg); border: 1px solid var(--border); padding: 10px 16px; height: 42px;
+            border-radius: var(--radius-sm); font-size: 14px; color: var(--text); cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .ec-popup {
+            position: absolute; top: calc(100% + 4px); right: 0; width: 280px;
+            background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 1000; padding: 16px; display: none;
+        }
+        .ec-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: var(--text); font-weight: 600; font-size: 15px;}
+        .ec-header button { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 4px 8px; border-radius: 4px; }
+        .ec-header button:hover { background: var(--bg); color: var(--text); }
+        .ec-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+        .ec-days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+        .ec-day { padding: 6px 0; font-size: 13px; color: var(--text); border-radius: 4px; cursor: pointer; transition: 0.2s; font-weight: 500;}
+        .ec-day:hover:not(:empty) { background: var(--border); }
+        .ec-day.selected { background: var(--primary); color: white; font-weight: 700;}
+        .ec-footer { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+        .ec-footer button { background: none; border: none; color: var(--primary); font-weight: 600; font-size: 13px; cursor: pointer; padding: 4px; }
+
+        /* ================================================== */
+        /* MOBILE RESPONSIVE PATCH                            */
         /* ================================================== */
         .mobile-toggle { display: none; background: transparent; border: none; color: var(--text); font-size: 22px; cursor: pointer; padding: 0; margin-right: 12px; }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 95; backdrop-filter: blur(2px); }
@@ -132,7 +157,6 @@
 </head>
 <body>
 
-    <!-- OVERLAY FOR MOBILE -->
     <div class="sidebar-overlay" id="sidebar_overlay" onclick="toggleSidebar()"></div>
 
     <aside class="sidebar" id="sidebar">
@@ -164,7 +188,6 @@
     <div class="main-content">
         <header class="header">
             <div class="header-left">
-                <!-- HAMBURGER ICON -->
                 <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
                 <div class="search-bar">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -210,44 +233,41 @@
                         </select>
                     </div>
                     
-                    <!-- NEW EC/GC TOGGLE DATE FIELD -->
+                    <!-- GC & EC TOGGLE DATE FIELD -->
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                             <label style="font-size:12px; font-weight:600; color:var(--text-muted);">Date (<span id="date_mode_label">GC</span>)</label>
-                            <button type="button" onclick="toggleInputCalendarMode(event)" style="background: none; border: none; color: var(--primary); font-size: 11px; font-weight: 700; cursor: pointer; padding: 0;">Switch to EC</button>
+                            <button type="button" onclick="toggleInputMode()" style="background: none; border: none; color: var(--primary); font-size: 11px; font-weight: 700; cursor: pointer; padding: 0;">Switch to EC</button>
                         </div>
                         
                         <!-- Standard GC Date Picker -->
-                        <input id="p_date_gc" type="date" class="form-input" onchange="syncDates()">
+                        <input id="p_date_gc" type="date" class="form-input" onchange="syncGcToBackend()" style="height: 42px;">
                         
-                        <!-- Ethiopian Calendar Inputs (Hidden by default) -->
-                        <div id="ec_inputs_wrapper" style="display: none; gap: 4px; grid-template-columns: 1fr 1fr 1fr;">
-                            <select id="ec_year" class="form-input" style="padding: 10px 4px;" onchange="syncEcToGc()">
-                                <option value="2018">2018</option>
-                                <option value="2019" selected>2019</option>
-                                <option value="2020">2020</option>
-                            </select>
-                            <select id="ec_month" class="form-input" style="padding: 10px 4px;" onchange="syncEcToGc()">
-                                <option value="1">Meskerem</option>
-                                <option value="2">Tikimt</option>
-                                <option value="3">Hidar</option>
-                                <option value="4">Tahsas</option>
-                                <option value="5">Tir</option>
-                                <option value="6">Yekatit</option>
-                                <option value="7">Megabit</option>
-                                <option value="8">Miazia</option>
-                                <option value="9">Ginbot</option>
-                                <option value="10">Sene</option>
-                                <option value="11">Hamle</option>
-                                <option value="12">Nehase</option>
-                                <option value="13">Pagume</option>
-                            </select>
-                            <select id="ec_day" class="form-input" style="padding: 10px 4px;" onchange="syncEcToGc()">
-                                <!-- Populated dynamically -->
-                            </select>
+                        <!-- Custom Ethiopian Popup Picker -->
+                        <div class="ec-calendar-wrapper" id="ec_wrapper">
+                            <div class="ec-calendar-input" onclick="toggleEcPopup()">
+                                <span id="ec_display_text">MM/DD/YYYY</span>
+                                <i class="fa-regular fa-calendar" style="color: var(--text-muted);"></i>
+                            </div>
+                            
+                            <div class="ec-popup" id="ec_popup">
+                                <div class="ec-header">
+                                    <button onclick="changeEcMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                                    <span id="ec_month_year">Month Year</span>
+                                    <button onclick="changeEcMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                                </div>
+                                <div class="ec-weekdays">
+                                    <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                                </div>
+                                <div class="ec-days-grid" id="ec_days_grid"></div>
+                                <div class="ec-footer">
+                                    <button onclick="clearEcDate()">Clear</button>
+                                    <button onclick="setEcToday()">Today</button>
+                                </div>
+                            </div>
                         </div>
                         
-                        <!-- Hidden input that sends the date to the backend -->
+                        <!-- Hidden input that sends date to backend -->
                         <input type="hidden" id="p_date">
                     </div>
 
@@ -290,74 +310,10 @@ function toggleSidebar() {
 }
 
 // ==========================================
-// DATE INPUT TOGGLE (GC / EC)
+// ETHIOPIAN CALENDAR MATH & UTILS
 // ==========================================
-let inputMode = 'GC';
-
-function toggleInputCalendarMode(event) {
-    inputMode = inputMode === 'GC' ? 'EC' : 'GC';
-    document.getElementById('date_mode_label').innerText = inputMode;
-    event.target.innerText = inputMode === 'GC' ? 'Switch to EC' : 'Switch to GC';
-    
-    if (inputMode === 'EC') {
-        document.getElementById('p_date_gc').style.display = 'none';
-        document.getElementById('ec_inputs_wrapper').style.display = 'grid';
-        populateEcDays();
-        
-        // Auto-select current EC date
-        const d = new Date();
-        const ecDate = gregorianToEthiopian(d);
-        
-        // Set year dropdown if exists, otherwise create option
-        let yOpt = document.querySelector(`#ec_year option[value="${ecDate.year}"]`);
-        if (!yOpt) {
-            document.getElementById('ec_year').innerHTML += `<option value="${ecDate.year}">${ecDate.year}</option>`;
-        }
-        document.getElementById('ec_year').value = ecDate.year;
-        document.getElementById('ec_month').value = ecDate.month;
-        document.getElementById('ec_day').value = ecDate.day;
-
-        syncEcToGc();
-    } else {
-        document.getElementById('p_date_gc').style.display = 'block';
-        document.getElementById('ec_inputs_wrapper').style.display = 'none';
-        syncDates();
-    }
-}
-
-function populateEcDays() {
-    const daySelect = document.getElementById('ec_day');
-    let opts = '';
-    for(let i=1; i<=30; i++) {
-        opts += `<option value="${i}">${i}</option>`;
-    }
-    daySelect.innerHTML = opts;
-}
-
-// Convert Ethiopian dropdowns to Gregorian and store it in hidden #p_date
-function syncEcToGc() {
-    const eYear = parseInt(document.getElementById('ec_year').value);
-    const eMonth = parseInt(document.getElementById('ec_month').value);
-    const eDay = parseInt(document.getElementById('ec_day').value);
-    
-    // Approximate conversion back to Gregorian for backend storage
-    let gYear = eYear + 7;
-    if (eMonth < 1 || (eMonth === 1 && eDay < 11)) {
-        gYear = eYear + 8;
-    }
-    
-    // Simplified mapping estimation for backend compatibility
-    const approxMonth = ((eMonth + 8) % 12) + 1;
-    const gDate = new Date(Date.UTC(gYear, approxMonth - 1, eDay));
-    document.getElementById('p_date').value = gDate.toISOString().split('T')[0];
-}
-
-function syncDates() {
-    document.getElementById('p_date').value = document.getElementById('p_date_gc').value;
-}
-
-// --- Ethiopian Calendar Logic ---
 const ETHIOPIAN_MONTHS = ['Meskerem','Tikimt','Hidar','Tahsas','Tir','Yekatit','Megabit','Miazia','Ginbot','Sene','Hamle','Nehase','Pagume'];
+
 function gregorianToEthiopian(gDate) {
     const jdn = Math.floor((gDate.getTime() / 86400000) + 2440587.5 + 0.5);
     const ethEpoch = 1723856;
@@ -368,25 +324,135 @@ function gregorianToEthiopian(gDate) {
     const eDay = (n % 30) + 1;
     return { year: eYear, month: eMonth, day: eDay, monthName: ETHIOPIAN_MONTHS[eMonth - 1] };
 }
-function formatEthiopian(gDateString) {
-    if(!gDateString) return '-';
-    const d = new Date(gDateString);
-    const e = gregorianToEthiopian(d);
-    return `${e.day} ${e.monthName} ${e.year}`;
-} 
+
+// Precise robust loop conversion to calculate back to Gregorian
+function ethiopianToGregorian(eYear, eMonth, eDay) {
+    const baseGC = new Date(Date.UTC(2007, 8, 12)); // 2000-01-01 EC is Sep 12, 2007 GC
+    let daysToCurrent = 0;
+    for (let y = 2000; y < eYear; y++) { daysToCurrent += ((y + 1) % 4 === 0) ? 366 : 365; }
+    for (let m = 1; m < eMonth; m++) { daysToCurrent += 30; }
+    daysToCurrent += (eDay - 1);
+    return new Date(baseGC.getTime() + (daysToCurrent * 86400000));
+}
+
+// ==========================================
+// CUSTOM EC DATE PICKER POPUP LOGIC
+// ==========================================
+let currentInputMode = 'GC';
+let viewEcYear, viewEcMonth;
+let selectedEcDate = null; // { year, month, day }
+
+function toggleInputMode() {
+    currentInputMode = currentInputMode === 'GC' ? 'EC' : 'GC';
+    document.getElementById('date_mode_label').innerText = currentInputMode;
+    event.target.innerText = currentInputMode === 'GC' ? 'Switch to EC' : 'Switch to GC';
+    
+    if (currentInputMode === 'EC') {
+        document.getElementById('p_date_gc').style.display = 'none';
+        document.getElementById('ec_wrapper').style.display = 'block';
+        if (!selectedEcDate) setEcToday(); // Init if empty
+    } else {
+        document.getElementById('p_date_gc').style.display = 'block';
+        document.getElementById('ec_wrapper').style.display = 'none';
+        syncGcToBackend();
+    }
+}
+
+function syncGcToBackend() {
+    document.getElementById('p_date').value = document.getElementById('p_date_gc').value;
+}
+
+function toggleEcPopup() {
+    const popup = document.getElementById('ec_popup');
+    popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+    renderEcGrid();
+}
+
+// Close popup if clicking outside
+document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('ec_wrapper');
+    const popup = document.getElementById('ec_popup');
+    if (wrapper && !wrapper.contains(e.target)) popup.style.display = 'none';
+});
+
+function setEcToday() {
+    const ecToday = gregorianToEthiopian(new Date());
+    viewEcYear = ecToday.year;
+    viewEcMonth = ecToday.month;
+    selectedEcDate = { year: ecToday.year, month: ecToday.month, day: ecToday.day };
+    updateEcInputText();
+    renderEcGrid();
+    document.getElementById('ec_popup').style.display = 'none';
+}
+
+function clearEcDate() {
+    selectedEcDate = null;
+    document.getElementById('ec_display_text').innerText = 'Select Date...';
+    document.getElementById('p_date').value = '';
+    document.getElementById('ec_popup').style.display = 'none';
+    renderEcGrid();
+}
+
+function changeEcMonth(delta) {
+    viewEcMonth += delta;
+    if (viewEcMonth > 13) { viewEcMonth = 1; viewEcYear++; }
+    if (viewEcMonth < 1) { viewEcMonth = 13; viewEcYear--; }
+    renderEcGrid();
+}
+
+function selectEcDay(day) {
+    selectedEcDate = { year: viewEcYear, month: viewEcMonth, day: day };
+    updateEcInputText();
+    document.getElementById('ec_popup').style.display = 'none';
+}
+
+function updateEcInputText() {
+    if(!selectedEcDate) return;
+    document.getElementById('ec_display_text').innerText = `${String(selectedEcDate.month).padStart(2,'0')}/${String(selectedEcDate.day).padStart(2,'0')}/${selectedEcDate.year}`;
+    const gDate = ethiopianToGregorian(selectedEcDate.year, selectedEcDate.month, selectedEcDate.day);
+    document.getElementById('p_date').value = gDate.toISOString().split('T')[0];
+}
+
+function renderEcGrid() {
+    document.getElementById('ec_month_year').innerText = `${ETHIOPIAN_MONTHS[viewEcMonth - 1]} ${viewEcYear}`;
+    
+    // Find what weekday the 1st of the month is
+    const gDateFirst = ethiopianToGregorian(viewEcYear, viewEcMonth, 1);
+    const startDay = gDateFirst.getDay(); // 0 = Sun, 1 = Mon
+    
+    const daysInMonth = viewEcMonth === 13 ? (((viewEcYear + 1) % 4 === 0) ? 6 : 5) : 30;
+    
+    let html = '';
+    for(let i=0; i<startDay; i++) html += `<div class="ec-day empty"></div>`;
+    
+    for(let d=1; d<=daysInMonth; d++) {
+        let isSel = selectedEcDate && selectedEcDate.year === viewEcYear && selectedEcDate.month === viewEcMonth && selectedEcDate.day === d;
+        html += `<div class="ec-day ${isSel ? 'selected' : ''}" onclick="selectEcDay(${d})">${d}</div>`;
+    }
+    document.getElementById('ec_days_grid').innerHTML = html;
+}
+
+// ==========================================
+// GLOBALS & THEME
+// ==========================================
 function toggleCalendar() {
     const current = localStorage.getItem('calendarType') || 'GC';
     localStorage.setItem('calendarType', current === 'GC' ? 'EC' : 'GC');
     location.reload(); 
 }
 function getCalendarType() { return localStorage.getItem('calendarType') || 'GC'; }
+
+function formatEthiopianDisplay(gDateString) {
+    if(!gDateString) return '-';
+    const e = gregorianToEthiopian(new Date(gDateString));
+    return `${e.day} ${e.monthName} ${e.year}`;
+} 
 function formatDate(gDateString) {
     if(!gDateString) return '-';
-    if (getCalendarType() === 'EC') return formatEthiopian(gDateString);
+    if (getCalendarType() === 'EC') return formatEthiopianDisplay(gDateString);
     return new Date(gDateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
 }
 
-// --- Theme Logic ---
 function toggleDarkMode() {
     document.body.classList.toggle('dark');
     const isDark = document.body.classList.contains('dark');
@@ -402,13 +468,15 @@ function loadPreferences() {
     const calType = getCalendarType();
     document.getElementById('cal_toggle').innerHTML = calType === 'EC' ? '<i class="fa-solid fa-calendar"></i> EC Mode' : '<i class="fa-solid fa-calendar"></i> GC Mode';
     
-    // Set today's date in GC format in the date picker automatically
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('p_date_gc').value = today;
-    document.getElementById('p_date').value = today; // Initialize hidden input
+    // Initialize default date (Today GC)
+    const todayStr = new Date().toISOString().split('T')[0];
+    document.getElementById('p_date_gc').value = todayStr;
+    document.getElementById('p_date').value = todayStr;
 }
 
-// --- Search Filter Logic ---
+// ==========================================
+// BACKEND API LOGIC
+// ==========================================
 function filterPayments() {
     const query = document.getElementById('search_box').value.toLowerCase();
     const rows = document.querySelectorAll('#recent_table tr');
@@ -420,7 +488,6 @@ function filterPayments() {
     });
 }
 
-// --- Backend API Logic ---
 async function checkAuth() {
     const res = await fetch('/me');
     if (!res.ok) { window.location.href = '/login.html'; return false; }
@@ -466,8 +533,8 @@ async function addPayment() {
     
     if(!memberSelect) return alert("Please select a member");
     if(!amountInput) return alert("Please enter an amount");
+    if(!document.getElementById('p_date').value) return alert("Please select a date");
 
-    // Important: We read from the hidden #p_date which holds the standardized GC date
     const body = {
         member_id: Number(memberSelect),
         amount: Number(amountInput),

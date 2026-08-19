@@ -181,9 +181,13 @@
                         </select>
                     </div>
                     <div>
-                        <label style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:4px; display:block;">Date</label>
-                        <input id="p_date" type="date" class="form-input">
+                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:4px; display:block;">Date (Ethiopian)</label>
+                    <div style="display:flex; gap:4px;">
+                        <select id="ec_day" class="form-input"></select>
+                        <select id="ec_month" class="form-input"></select>
+                        <select id="ec_year" class="form-input"></select>
                     </div>
+</div>
                     <button class="btn-primary" onclick="addPayment()">
                         <i class="fa-solid fa-check"></i> Record
                     </button>
@@ -214,6 +218,33 @@
     </div>
 
 <script>
+
+function populateEthiopianPicker() {
+    const daySelect = document.getElementById('ec_day');
+    const monthSelect = document.getElementById('ec_month');
+    const yearSelect = document.getElementById('ec_year');
+
+    for (let d = 1; d <= 30; d++) daySelect.innerHTML += `<option value="${d}">${d}</option>`;
+    ETHIOPIAN_MONTHS.forEach((m, i) => monthSelect.innerHTML += `<option value="${i + 1}">${m}</option>`);
+
+    const todayEC = gregorianToEthiopian(new Date());
+    for (let y = todayEC.year - 2; y <= todayEC.year + 1; y++) {
+        yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+    }
+
+    daySelect.value = todayEC.day;
+    monthSelect.value = todayEC.month;
+    yearSelect.value = todayEC.year;
+}
+
+function getSelectedGregorianDate() {
+    const day = Number(document.getElementById('ec_day').value);
+    const month = Number(document.getElementById('ec_month').value);
+    const year = Number(document.getElementById('ec_year').value);
+    const gDate = ethiopianToGregorian(year, month, day);
+    return gDate.toISOString().split('T')[0];
+}
+
 // --- Ethiopian Calendar Logic ---
 const ETHIOPIAN_MONTHS = ['Meskerem','Tikimt','Hidar','Tahsas','Tir','Yekatit','Megabit','Miazia','Ginbot','Sene','Hamle','Nehase','Pagume'];
 function gregorianToEthiopian(gDate) {
@@ -225,6 +256,12 @@ function gregorianToEthiopian(gDate) {
     const eMonth = Math.floor(n / 30) + 1;
     const eDay = (n % 30) + 1;
     return { year: eYear, month: eMonth, day: eDay, monthName: ETHIOPIAN_MONTHS[eMonth - 1] };
+}
+function ethiopianToGregorian(eYear, eMonth, eDay) {
+    const ethEpoch = 1723856;
+    const jdn = ethEpoch + 365 * eYear + Math.floor(eYear / 4) + 30 * (eMonth - 1) + (eDay - 1);
+    const gDate = new Date((jdn - 2440587.5 - 0.5) * 86400000);
+    return gDate;
 }
 function formatEthiopian(gDateString) {
     if(!gDateString) return '-';
@@ -327,7 +364,7 @@ async function addPayment() {
         member_id: Number(memberSelect),
         amount: Number(amountInput),
         period_type: document.getElementById('p_period').value,
-        paid_at: document.getElementById('p_date').value || undefined
+        paid_at: getSelectedGregorianDate()
     };
     
     const res = await fetch('/payments', {
@@ -404,6 +441,7 @@ async function deletePayment(id) {
 
 (async () => {
     loadPreferences();
+    populateEthiopianPicker();
     if (await checkAuth()) {
         await loadGroupOptions();
         loadRecent();

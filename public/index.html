@@ -18,6 +18,7 @@
             --text: #1f2937;
             --text-muted: #6b7280;
             --border: #e5e7eb;
+            --success: #10b981;
         }
 
         body.dark {
@@ -151,32 +152,21 @@
         /* ================================================== */
         /* MOBILE RESPONSIVE PATCH */
         /* ================================================== */
-        .mobile-toggle {
-            display: none; background: transparent; border: none; color: var(--text); 
-            font-size: 22px; cursor: pointer; padding: 0; margin-right: 12px;
-        }
-        .sidebar-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5); z-index: 95; backdrop-filter: blur(2px);
-        }
+        .mobile-toggle { display: none; background: transparent; border: none; color: var(--text); font-size: 22px; cursor: pointer; padding: 0; margin-right: 12px; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 95; backdrop-filter: blur(2px); }
         .sidebar-overlay.show { display: block; }
 
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
             .sidebar.show { transform: translateX(0); }
-
             .main-content { margin-left: 0 !important; padding: 16px !important; width: 100%; }
             .mobile-toggle { display: inline-block; }
-
             .topbar { flex-direction: column; align-items: flex-start; gap: 16px; }
             .topbar > div { display: grid; grid-template-columns: 1fr 1fr; width: 100%; gap: 8px !important; }
             .topbar button { width: 100%; text-align: center; justify-content: center; display: flex; }
-
             .welcome-banner { flex-direction: column; align-items: flex-start !important; gap: 16px; padding: 20px !important; }
             .welcome-banner .group-select { width: 100%; }
-
             .dashboard-row { grid-template-columns: 1fr !important; }
-            
             .chart-panel, .calendar-panel { padding: 16px; }
         }
     </style>
@@ -271,8 +261,13 @@
         <div class="dashboard-row">
             <div class="chart-panel">
                 <h2><i class="fa-solid fa-chart-simple"></i>Collection Overview (Last 7 Days)</h2>
-                <canvas id="collection_chart" height="100"></canvas>
+                
+                <!-- FIX FOR CHART INFINITE STRETCHING BUG -->
+                <div style="position: relative; height: 280px; width: 100%;">
+                    <canvas id="collection_chart"></canvas>
+                </div>
             </div>
+            
             <div class="calendar-panel">
                 <div class="cal-nav">
                     <button onclick="changeMonth(-1)">&lt;</button>
@@ -317,6 +312,15 @@ function gregorianToEthiopian(gDate) {
     const eMonth = Math.floor(n / 30) + 1;
     const eDay = (n % 30) + 1;
     return { year: eYear, month: eMonth, day: eDay, monthName: ETHIOPIAN_MONTHS[eMonth - 1] };
+}
+
+function ethiopianToGregorian(eYear, eMonth, eDay) {
+    const baseGC = new Date(Date.UTC(2007, 8, 12)); 
+    let daysToCurrent = 0;
+    for (let y = 2000; y < eYear; y++) { daysToCurrent += ((y + 1) % 4 === 0) ? 366 : 365; }
+    for (let m = 1; m < eMonth; m++) { daysToCurrent += 30; }
+    daysToCurrent += (eDay - 1);
+    return new Date(baseGC.getTime() + (daysToCurrent * 86400000));
 }
 
 function formatEthiopian(gDateString) {
@@ -415,9 +419,7 @@ async function loadStats() {
     document.getElementById('stat_active').innerText = data.active_fund.toLocaleString() + ' Birr';
 }
 
-let calYear = new Date().getFullYear();
-let calMonth = new Date().getMonth() + 1;
-
+// Chart loading logic
 async function loadCollectionChart() {
     const res = await fetch('/collection-overview');
     if (!res.ok) return;
@@ -445,24 +447,80 @@ async function loadCollectionChart() {
     });
 }
 
+// ==========================================
+// DASHBOARD CALENDAR GRID (Supports GC & EC)
+// ==========================================
+let todayDate = new Date();
+let calYearGC = todayDate.getFullYear();
+let calMonthGC = todayDate.getMonth() + 1;
+
+let ecToday = gregorianToEthiopian(todayDate);
+let calYearEC = ecToday.year;
+let calMonthEC = ecToday.month;
+
 async function loadCalendar() {
-    const res = await fetch(`/payment-calendar?year=${calYear}&month=${calMonth}`);
-    if (!res.ok) return;
-    const data = await res.json();
+    const isEC = getCalendarType() === 'EC';
+    let daysData = {};
 
-    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    document.getElementById('cal_label').innerHTML = `<i class="fa-solid fa-calendar-days"></i> ${monthNames[calMonth - 1]} ${calYear}`;
+    if (!isEC) {
+        // --- RENDER GREGORIAN CALENDAR ---
+        const res = await fetch(`/payment-calendar?year=${calYearGC}&month=${calMonthGC}`);
+        if (res.ok) {
+            const data = await res.json();
+            daysData = data.days || {};
+        }
 
-    const firstDay = new Date(calYear, calMonth - 1, 1).getDay();
-    const daysInMonth = new Date(calYear, calMonth, 0).getDate();
+        const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        document.getElementById('cal_label').innerHTML = `<i class="fa-solid fa-calendar-days"></i> ${monthNames[calMonthGC - 1]} ${calYearGC}`;
 
+        const firstDay = new Date(calYearGC, calMonthGC - 1, 1).getDay();
+        const daysInMonth = new Date(calYearGC, calMonthGC, 0).getDate();
+
+        renderGridUI(firstDay, daysInMonth, (day) => {
+            const key = `${calYearGC}-${String(calMonthGC).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+            return daysData[key];
+        });
+
+    } else {
+        // --- RENDER ETHIOPIAN CALENDAR ---
+        document.getElementById('cal_label').innerHTML = `<i class="fa-solid fa-calendar-days"></i> ${ETHIOPIAN_MONTHS[calMonthEC - 1]} ${calYearEC}`;
+        
+        const daysInECMonth = calMonthEC === 13 ? (((calYearEC + 1) % 4 === 0) ? 6 : 5) : 30;
+        const startDateGC = ethiopianToGregorian(calYearEC, calMonthEC, 1);
+        const endDateGC = ethiopianToGregorian(calYearEC, calMonthEC, daysInECMonth);
+
+        // Fetch data for the overlapping GC months
+        let res1 = await fetch(`/payment-calendar?year=${startDateGC.getFullYear()}&month=${startDateGC.getMonth() + 1}`);
+        if (res1.ok) {
+            let d1 = await res1.json();
+            Object.assign(daysData, d1.days || {});
+        }
+
+        if (startDateGC.getMonth() !== endDateGC.getMonth()) {
+            let res2 = await fetch(`/payment-calendar?year=${endDateGC.getFullYear()}&month=${endDateGC.getMonth() + 1}`);
+            if (res2.ok) {
+                let d2 = await res2.json();
+                Object.assign(daysData, d2.days || {});
+            }
+        }
+
+        const firstDay = startDateGC.getDay(); 
+
+        renderGridUI(firstDay, daysInECMonth, (day) => {
+            const gDate = ethiopianToGregorian(calYearEC, calMonthEC, day);
+            const key = `${gDate.getFullYear()}-${String(gDate.getMonth() + 1).padStart(2,'0')}-${String(gDate.getDate()).padStart(2,'0')}`;
+            return daysData[key];
+        });
+    }
+}
+
+function renderGridUI(firstDayOffset, totalDays, getStatusFn) {
     let html = '';
     ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d => html += `<div class="cal-head">${d}</div>`);
-    for (let i = 0; i < firstDay; i++) html += '<div class="cal-day"></div>';
+    for (let i = 0; i < firstDayOffset; i++) html += '<div class="cal-day"></div>';
 
-    for (let day = 1; day <= daysInMonth; day++) {
-        const key = `${calYear}-${String(calMonth).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-        const status = data.days[key];
+    for (let day = 1; day <= totalDays; day++) {
+        const status = getStatusFn(day);
         const dot = status ? `<span class="dot dot-${status}"></span>` : '';
         html += `<div class="cal-day">${day}${dot}</div>`;
     }
@@ -470,9 +528,16 @@ async function loadCalendar() {
 }
 
 function changeMonth(delta) {
-    calMonth += delta;
-    if (calMonth > 12) { calMonth = 1; calYear++; }
-    if (calMonth < 1) { calMonth = 12; calYear--; }
+    const isEC = getCalendarType() === 'EC';
+    if (!isEC) {
+        calMonthGC += delta;
+        if (calMonthGC > 12) { calMonthGC = 1; calYearGC++; }
+        if (calMonthGC < 1) { calMonthGC = 12; calYearGC--; }
+    } else {
+        calMonthEC += delta;
+        if (calMonthEC > 13) { calMonthEC = 1; calYearEC++; }
+        if (calMonthEC < 1) { calMonthEC = 13; calYearEC--; }
+    }
     loadCalendar();
 }
 

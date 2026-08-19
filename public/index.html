@@ -131,14 +131,19 @@
         /* Calendar Styles */
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; font-size: 13px; }
         .cal-grid .cal-head { font-weight: 600; color: var(--text-muted); padding: 4px 0; }
-        .cal-day { padding: 10px 0; border-radius: 6px; position: relative; color: var(--text); background: var(--bg); font-weight: 500;}
-        .cal-day:empty { background: transparent; }
+        
+        /* UPDATED: Added hover effects and pointer to show they are clickable */
+        .cal-day { padding: 10px 0; border-radius: 6px; position: relative; color: var(--text); background: var(--bg); font-weight: 500; cursor: pointer; transition: background 0.2s;}
+        .cal-day.empty { background: transparent; cursor: default; }
+        .cal-day:hover:not(.empty) { background: var(--border); }
+        
         .cal-day .dot { display: block; width: 6px; height: 6px; border-radius: 50%; margin: 4px auto 0; }
         .dot-paid { background: #1b8a4a; }
         .dot-partial { background: #d99a1b; }
         .dot-not_paid { background: #b02a2a; }
         .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; color: var(--text); }
-        .cal-nav button { width: auto; background: var(--bg); color: var(--text); padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
+        .cal-nav button { width: auto; background: var(--bg); color: var(--text); padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: 0.2s;}
+        .cal-nav button:hover { filter: brightness(0.95); }
 
         /* Quick Actions */
         .quick-actions h2 { font-size: 16px; font-weight: 600; color: var(--text); margin: 0 0 16px; }
@@ -259,11 +264,9 @@
         </div>
 
         <div class="dashboard-row">
-            <div class="chart-panel">
+            <div class="chart-panel" style="display: flex; flex-direction: column;">
                 <h2><i class="fa-solid fa-chart-simple"></i>Collection Overview (Last 7 Days)</h2>
-                
-                <!-- FIX FOR CHART INFINITE STRETCHING BUG -->
-                <div style="position: relative; height: 280px; width: 100%;">
+                <div style="position: relative; flex-grow: 1; width: 100%; min-height: 250px;">
                     <canvas id="collection_chart"></canvas>
                 </div>
             </div>
@@ -489,7 +492,7 @@ async function loadCalendar() {
         const startDateGC = ethiopianToGregorian(calYearEC, calMonthEC, 1);
         const endDateGC = ethiopianToGregorian(calYearEC, calMonthEC, daysInECMonth);
 
-        // Fetch data for the overlapping GC months
+        // Fetch data for overlapping GC months
         let res1 = await fetch(`/payment-calendar?year=${startDateGC.getFullYear()}&month=${startDateGC.getMonth() + 1}`);
         if (res1.ok) {
             let d1 = await res1.json();
@@ -514,17 +517,49 @@ async function loadCalendar() {
     }
 }
 
+// UPDATED: Now adds onclick="showDayCollection(day)" to the calendar buttons
 function renderGridUI(firstDayOffset, totalDays, getStatusFn) {
     let html = '';
     ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d => html += `<div class="cal-head">${d}</div>`);
-    for (let i = 0; i < firstDayOffset; i++) html += '<div class="cal-day"></div>';
+    for (let i = 0; i < firstDayOffset; i++) html += '<div class="cal-day empty"></div>';
 
     for (let day = 1; day <= totalDays; day++) {
         const status = getStatusFn(day);
         const dot = status ? `<span class="dot dot-${status}"></span>` : '';
-        html += `<div class="cal-day">${day}${dot}</div>`;
+        html += `<div class="cal-day" onclick="showDayCollection(${day})">${day}${dot}</div>`;
     }
     document.getElementById('cal_grid').innerHTML = html;
+}
+
+// NEW: Fetch and alert the total collections when a specific day is clicked
+async function showDayCollection(day) {
+    let gYear, gMonth, gDay;
+    const isEC = getCalendarType() === 'EC';
+    
+    if (!isEC) {
+        gYear = calYearGC;
+        gMonth = calMonthGC;
+        gDay = day;
+    } else {
+        const gDate = ethiopianToGregorian(calYearEC, calMonthEC, day);
+        gYear = gDate.getFullYear();
+        gMonth = gDate.getMonth() + 1;
+        gDay = gDate.getDate();
+    }
+    
+    const dateStr = `${gYear}-${String(gMonth).padStart(2,'0')}-${String(gDay).padStart(2,'0')}`;
+    
+    try {
+        const res = await fetch(`/daily-collection?date=${dateStr}`);
+        if (res.ok) {
+            const data = await res.json();
+            const displayDate = isEC ? `${day} ${ETHIOPIAN_MONTHS[calMonthEC - 1]} ${calYearEC}` : dateStr;
+            
+            alert(`📅 Date: ${displayDate}\n\n💰 Total Collected: ${data.total_collected.toLocaleString()} Birr\n👥 Members Paid: ${data.paid_count}`);
+        }
+    } catch (e) {
+        alert("Could not fetch data for this date.");
+    }
 }
 
 function changeMonth(delta) {

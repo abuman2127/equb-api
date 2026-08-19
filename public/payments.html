@@ -80,7 +80,6 @@
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 16px;}
         .panel-header h2 { margin: 0; font-size: 18px; color: var(--text); display: flex; align-items: center; gap: 8px; }
         
-        /* Form Grids */
         .add-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; align-items: end;}
         select, .form-input { background: var(--bg); border: 1px solid var(--border); padding: 10px 16px; border-radius: var(--radius-sm); font-size: 14px; color: var(--text); outline: none; width: 100%; }
         input[type="date"] { color-scheme: light dark; }
@@ -88,7 +87,6 @@
         .btn-primary:hover { background: var(--primary-dark); }
         .msg { font-size: 14px; font-weight: 500; color: var(--success); margin-top: 12px; }
 
-        /* Tables */
         .table-wrapper { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; white-space: nowrap; }
         th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
@@ -152,7 +150,6 @@
         <div class="container">
             <h1 class="page-title">Manage Payments</h1>
 
-            <!-- Record Payment Panel -->
             <div class="panel">
                 <div class="panel-header">
                     <h2><i class="fa-solid fa-money-bill-wave" style="color: var(--success);"></i> Record New Payment</h2>
@@ -181,13 +178,13 @@
                         </select>
                     </div>
                     <div>
-                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:4px; display:block;">Date (Ethiopian)</label>
-                    <div style="display:flex; gap:4px;">
-                        <select id="ec_day" class="form-input"></select>
-                        <select id="ec_month" class="form-input"></select>
-                        <select id="ec_year" class="form-input"></select>
+                        <label style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:4px; display:block;">Date (Ethiopian)</label>
+                        <div style="display:flex; gap:4px;">
+                            <select id="ec_day" class="form-input"></select>
+                            <select id="ec_month" class="form-input"></select>
+                            <select id="ec_year" class="form-input"></select>
+                        </div>
                     </div>
-</div>
                     <button class="btn-primary" onclick="addPayment()">
                         <i class="fa-solid fa-check"></i> Record
                     </button>
@@ -195,7 +192,6 @@
                 <div id="p_msg" class="msg"></div>
             </div>
 
-            <!-- Recent Payments Panel -->
             <div class="panel">
                 <div class="panel-header">
                     <h2><i class="fa-solid fa-clock-rotate-left" style="color: var(--primary);"></i> Recent Payments</h2>
@@ -209,15 +205,53 @@
                 </div>
 
                 <div class="table-wrapper">
-                    <table id="recent_table">
-                        <!-- Populated by JS -->
-                    </table>
+                    <table id="recent_table"></table>
                 </div>
             </div>
         </div>
     </div>
 
 <script>
+const ETHIOPIAN_MONTHS = ['Meskerem','Tikimt','Hidar','Tahsas','Tir','Yekatit','Megabit','Miazia','Ginbot','Sene','Hamle','Nehase','Pagume'];
+
+function gregorianToEthiopian(gDate) {
+    const jdn = Math.floor((gDate.getTime() / 86400000) + 2440587.5 + 0.5);
+    const ethEpoch = 1723856;
+    const r = (jdn - ethEpoch) % 1461;
+    const n = (r % 365) + 365 * Math.floor(r / 1460);
+    const eYear = 4 * Math.floor((jdn - ethEpoch) / 1461) + Math.floor(r / 365) - Math.floor(r / 1460);
+    const eMonth = Math.floor(n / 30) + 1;
+    const eDay = (n % 30) + 1;
+    return { year: eYear, month: eMonth, day: eDay, monthName: ETHIOPIAN_MONTHS[eMonth - 1] };
+}
+
+function ethiopianToGregorian(eYear, eMonth, eDay) {
+    const ethEpoch = 1723856;
+    const jdn = ethEpoch + 365 * eYear + Math.floor(eYear / 4) + 30 * (eMonth - 1) + (eDay - 1);
+    const gDate = new Date((jdn - 2440587.5 - 0.5) * 86400000);
+    return gDate;
+}
+
+function formatEthiopian(gDateString) {
+    if (!gDateString) return '-';
+    const d = new Date(gDateString);
+    const e = gregorianToEthiopian(d);
+    return `${e.day} ${e.monthName} ${e.year}`;
+}
+
+function toggleCalendar() {
+    const current = localStorage.getItem('calendarType') || 'GC';
+    localStorage.setItem('calendarType', current === 'GC' ? 'EC' : 'GC');
+    location.reload();
+}
+
+function getCalendarType() { return localStorage.getItem('calendarType') || 'GC'; }
+
+function formatDate(gDateString) {
+    if (!gDateString) return '-';
+    if (getCalendarType() === 'EC') return formatEthiopian(gDateString);
+    return new Date(gDateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
 
 function populateEthiopianPicker() {
     const daySelect = document.getElementById('ec_day');
@@ -245,43 +279,6 @@ function getSelectedGregorianDate() {
     return gDate.toISOString().split('T')[0];
 }
 
-// --- Ethiopian Calendar Logic ---
-const ETHIOPIAN_MONTHS = ['Meskerem','Tikimt','Hidar','Tahsas','Tir','Yekatit','Megabit','Miazia','Ginbot','Sene','Hamle','Nehase','Pagume'];
-function gregorianToEthiopian(gDate) {
-    const jdn = Math.floor((gDate.getTime() / 86400000) + 2440587.5 + 0.5);
-    const ethEpoch = 1723856;
-    const r = (jdn - ethEpoch) % 1461;
-    const n = (r % 365) + 365 * Math.floor(r / 1460);
-    const eYear = 4 * Math.floor((jdn - ethEpoch) / 1461) + Math.floor(r / 365) - Math.floor(r / 1460);
-    const eMonth = Math.floor(n / 30) + 1;
-    const eDay = (n % 30) + 1;
-    return { year: eYear, month: eMonth, day: eDay, monthName: ETHIOPIAN_MONTHS[eMonth - 1] };
-}
-function ethiopianToGregorian(eYear, eMonth, eDay) {
-    const ethEpoch = 1723856;
-    const jdn = ethEpoch + 365 * eYear + Math.floor(eYear / 4) + 30 * (eMonth - 1) + (eDay - 1);
-    const gDate = new Date((jdn - 2440587.5 - 0.5) * 86400000);
-    return gDate;
-}
-function formatEthiopian(gDateString) {
-    if(!gDateString) return '-';
-    const d = new Date(gDateString);
-    const e = gregorianToEthiopian(d);
-    return `${e.day} ${e.monthName} ${e.year}`;
-} 
-function toggleCalendar() {
-    const current = localStorage.getItem('calendarType') || 'GC';
-    localStorage.setItem('calendarType', current === 'GC' ? 'EC' : 'GC');
-    location.reload(); 
-}
-function getCalendarType() { return localStorage.getItem('calendarType') || 'GC'; }
-function formatDate(gDateString) {
-    if(!gDateString) return '-';
-    if (getCalendarType() === 'EC') return formatEthiopian(gDateString);
-    return new Date(gDateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
-}
-
-// --- Theme Logic ---
 function toggleDarkMode() {
     document.body.classList.toggle('dark');
     const isDark = document.body.classList.contains('dark');
@@ -296,12 +293,8 @@ function loadPreferences() {
     }
     const calType = getCalendarType();
     document.getElementById('cal_toggle').innerHTML = calType === 'EC' ? '<i class="fa-solid fa-calendar"></i> EC Mode' : '<i class="fa-solid fa-calendar"></i> GC Mode';
-    
-    // Set today's date in GC format in the date picker automatically
-    document.getElementById('p_date').value = new Date().toISOString().split('T')[0];
 }
 
-// --- Search Filter Logic ---
 function filterPayments() {
     const query = document.getElementById('search_box').value.toLowerCase();
     const rows = document.querySelectorAll('#recent_table tr');
@@ -313,7 +306,6 @@ function filterPayments() {
     });
 }
 
-// --- Backend API Logic ---
 async function checkAuth() {
     const res = await fetch('/me');
     if (!res.ok) { window.location.href = '/login.html'; return false; }
@@ -357,8 +349,8 @@ async function addPayment() {
     const memberSelect = document.getElementById('p_member_select').value;
     const amountInput = document.getElementById('p_amount').value;
     
-    if(!memberSelect) return alert("Please select a member");
-    if(!amountInput) return alert("Please enter an amount");
+    if (!memberSelect) return alert("Please select a member");
+    if (!amountInput) return alert("Please enter an amount");
 
     const body = {
         member_id: Number(memberSelect),
@@ -379,7 +371,7 @@ async function addPayment() {
     if (res.ok) {
         msgDiv.style.color = 'var(--success)';
         msgDiv.innerHTML = `<i class="fa-solid fa-circle-check"></i> Payment recorded: ${data.amount} Birr`;
-        document.getElementById('p_amount').value = ''; // clear amount input
+        document.getElementById('p_amount').value = '';
         loadRecent();
     } else {
         msgDiv.style.color = 'var(--danger)';
@@ -401,7 +393,7 @@ async function loadRecent() {
         html += `<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">No recent payments found.</td></tr>`;
     } else {
         data.forEach(p => {
-            const time = formatDate(p.paid_at); // Uses EC/GC conversion!
+            const time = formatDate(p.paid_at);
             html += `<tr>
                 <td style="color: var(--text-muted); font-weight:600;">${p.member_id}</td>
                 <td style="font-weight: 600;"><a href="/member-detail.html?id=${p.member_id}" style="color: var(--text); text-decoration: underline;">${p.full_name}</a></td>

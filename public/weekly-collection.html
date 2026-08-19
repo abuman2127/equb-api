@@ -47,7 +47,7 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
 
-        .sidebar { width: 260px; background-color: var(--sidebar); border-right: 1px solid var(--border); height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; display: flex; flex-direction: column; }
+        .sidebar { width: 260px; background-color: var(--sidebar); border-right: 1px solid var(--border); height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; display: flex; flex-direction: column; transition: transform 0.3s ease; }
         .brand { height: 72px; display: flex; align-items: center; padding: 0 24px; gap: 12px; border-bottom: 1px solid var(--border); }
         .brand-icon { width: 32px; height: 32px; background: var(--primary); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; }
         .brand-text { font-weight: 700; font-size: 16px; color: var(--text); }
@@ -106,9 +106,64 @@
         
         .badge-paid { background: var(--success-bg); color: var(--success); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
         .badge-unpaid { background: var(--danger-bg); color: var(--danger); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+
+        /* ================================================== */
+        /* CUSTOM EC POPUP CALENDAR STYLES                    */
+        /* ================================================== */
+        .ec-calendar-wrapper { position: relative; min-width: 240px; display: none; }
+        .ec-calendar-input {
+            background: var(--bg); border: 1px solid var(--border); padding: 10px 16px; height: 42px;
+            border-radius: var(--radius-sm); font-size: 14px; color: var(--text); cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .ec-popup {
+            position: absolute; top: calc(100% + 4px); left: 0; width: 280px;
+            background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 1000; padding: 16px; display: none;
+        }
+        .ec-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; color: var(--text); font-weight: 600; font-size: 15px;}
+        .ec-header button { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 4px 8px; border-radius: 4px; }
+        .ec-header button:hover { background: var(--bg); color: var(--text); }
+        .ec-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+        .ec-days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+        .ec-day { padding: 6px 0; font-size: 13px; color: var(--text); border-radius: 4px; cursor: pointer; transition: 0.2s; font-weight: 500;}
+        .ec-day:hover:not(:empty) { background: var(--border); }
+        .ec-day.selected { background: var(--primary); color: white; font-weight: 700;}
+        .ec-footer { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+        .ec-footer button { background: none; border: none; color: var(--primary); font-weight: 600; font-size: 13px; cursor: pointer; padding: 4px; }
+
+        /* ================================================== */
+        /* MOBILE RESPONSIVE PATCH                            */
+        /* ================================================== */
+        .mobile-toggle { display: none; background: transparent; border: none; color: var(--text); font-size: 22px; cursor: pointer; padding: 0; margin-right: 12px; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 95; backdrop-filter: blur(2px); }
+        .sidebar-overlay.show { display: block; }
+        
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0 !important; padding: 16px !important; width: 100%; }
+            .mobile-toggle { display: inline-block; }
+            
+            .header { flex-direction: column; align-items: flex-start; gap: 16px; height: auto !important; padding: 16px !important; }
+            .header-left, .header-right { width: 100%; justify-content: flex-start; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;}
+            .header-left { display: flex; align-items: center; }
+            .search-bar { width: 100% !important; flex: 1; }
+            
+            .toolbar, .filter-group { flex-direction: column; align-items: stretch !important; gap: 12px; width: 100%;}
+            .date-picker-wrapper { width: 100%; }
+            .date-picker-wrapper > div { width: 100%; }
+            input[type="date"], .ec-calendar-wrapper { width: 100% !important; }
+            .btn-action, .btn-logout { width: 100%; text-align: center; justify-content: center; }
+            
+            .panel-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+        }
     </style>
 </head>
 <body>
+
+    <!-- OVERLAY FOR MOBILE -->
+    <div class="sidebar-overlay" id="sidebar_overlay" onclick="toggleSidebar()"></div>
 
     <aside class="sidebar" id="sidebar">
         <div class="brand">
@@ -139,7 +194,8 @@
     <div class="main-content">
         <header class="header">
             <div class="header-left">
-                <!-- Live Search Bar -->
+                <!-- HAMBURGER ICON -->
+                <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
                 <div class="search-bar">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="search_box" placeholder="Search members..." oninput="filterMembers()">
@@ -156,9 +212,44 @@
             <h1 class="page-title">Weekly Collection Overview</h1>
 
             <div class="toolbar">
-                <div class="date-picker-wrapper">
-                    <label><i class="fa-solid fa-calendar-week"></i> Select Date in Week:</label>
-                    <input type="date" id="week_picker">
+                <div class="date-picker-wrapper" style="align-items: flex-end; width: 100%;">
+                    <!-- GC & EC TOGGLE DATE FIELD -->
+                    <div style="width: 100%; max-width: 300px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <label style="font-size:13px; font-weight:600; color:var(--text-muted);"><i class="fa-solid fa-calendar-week"></i> Select Date in Week (<span id="date_mode_label">GC</span>)</label>
+                            <button type="button" onclick="toggleInputMode(event)" style="background: none; border: none; color: var(--primary); font-size: 11px; font-weight: 700; cursor: pointer; padding: 0;">Switch to EC</button>
+                        </div>
+                        
+                        <!-- Standard GC Date Picker -->
+                        <input id="date_picker_gc" type="date" class="form-input" onchange="syncGcToBackend()" style="height: 42px; width: 100%;">
+                        
+                        <!-- Custom Ethiopian Popup Picker -->
+                        <div class="ec-calendar-wrapper" id="ec_wrapper">
+                            <div class="ec-calendar-input" onclick="toggleEcPopup()">
+                                <span id="ec_display_text">MM/DD/YYYY</span>
+                                <i class="fa-regular fa-calendar" style="color: var(--text-muted);"></i>
+                            </div>
+                            
+                            <div class="ec-popup" id="ec_popup">
+                                <div class="ec-header">
+                                    <button onclick="changeEcMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                                    <span id="ec_month_year">Month Year</span>
+                                    <button onclick="changeEcMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                                </div>
+                                <div class="ec-weekdays">
+                                    <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                                </div>
+                                <div class="ec-days-grid" id="ec_days_grid"></div>
+                                <div class="ec-footer">
+                                    <button onclick="clearEcDate()">Clear</button>
+                                    <button onclick="setEcToday()">Today</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden input that triggers the backend fetch -->
+                        <input type="hidden" id="week_picker">
+                    </div>
                 </div>
             </div>
 
@@ -201,8 +292,19 @@
     </div>
 
 <script>
-// --- Ethiopian Calendar Logic ---
+// ==========================================
+// MOBILE MENU TOGGLE
+// ==========================================
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('show');
+    document.getElementById('sidebar_overlay').classList.toggle('show');
+}
+
+// ==========================================
+// ETHIOPIAN CALENDAR MATH & UTILS
+// ==========================================
 const ETHIOPIAN_MONTHS = ['Meskerem','Tikimt','Hidar','Tahsas','Tir','Yekatit','Megabit','Miazia','Ginbot','Sene','Hamle','Nehase','Pagume'];
+
 function gregorianToEthiopian(gDate) {
     const jdn = Math.floor((gDate.getTime() / 86400000) + 2440587.5 + 0.5);
     const ethEpoch = 1723856;
@@ -213,6 +315,116 @@ function gregorianToEthiopian(gDate) {
     const eDay = (n % 30) + 1;
     return { year: eYear, month: eMonth, day: eDay, monthName: ETHIOPIAN_MONTHS[eMonth - 1] };
 }
+
+function ethiopianToGregorian(eYear, eMonth, eDay) {
+    const baseGC = new Date(Date.UTC(2007, 8, 12)); 
+    let daysToCurrent = 0;
+    for (let y = 2000; y < eYear; y++) { daysToCurrent += ((y + 1) % 4 === 0) ? 366 : 365; }
+    for (let m = 1; m < eMonth; m++) { daysToCurrent += 30; }
+    daysToCurrent += (eDay - 1);
+    return new Date(baseGC.getTime() + (daysToCurrent * 86400000));
+}
+
+// ==========================================
+// CUSTOM EC DATE PICKER POPUP LOGIC
+// ==========================================
+let currentInputMode = 'GC';
+let viewEcYear, viewEcMonth;
+let selectedEcDate = null; 
+
+function toggleInputMode(event) {
+    currentInputMode = currentInputMode === 'GC' ? 'EC' : 'GC';
+    document.getElementById('date_mode_label').innerText = currentInputMode;
+    event.target.innerText = currentInputMode === 'GC' ? 'Switch to EC' : 'Switch to GC';
+    
+    if (currentInputMode === 'EC') {
+        document.getElementById('date_picker_gc').style.display = 'none';
+        document.getElementById('ec_wrapper').style.display = 'block';
+        if (!selectedEcDate) setEcToday(); 
+    } else {
+        document.getElementById('date_picker_gc').style.display = 'block';
+        document.getElementById('ec_wrapper').style.display = 'none';
+        syncGcToBackend();
+    }
+}
+
+function syncGcToBackend() {
+    document.getElementById('week_picker').value = document.getElementById('date_picker_gc').value;
+    loadCollection(); // Fetch data when GC date changes
+}
+
+function toggleEcPopup() {
+    const popup = document.getElementById('ec_popup');
+    popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+    renderEcGrid();
+}
+
+// Close popup if clicking outside
+document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('ec_wrapper');
+    const popup = document.getElementById('ec_popup');
+    if (wrapper && !wrapper.contains(e.target)) popup.style.display = 'none';
+});
+
+function setEcToday() {
+    const ecToday = gregorianToEthiopian(new Date());
+    viewEcYear = ecToday.year;
+    viewEcMonth = ecToday.month;
+    selectedEcDate = { year: ecToday.year, month: ecToday.month, day: ecToday.day };
+    updateEcInputText();
+    renderEcGrid();
+    document.getElementById('ec_popup').style.display = 'none';
+}
+
+function clearEcDate() {
+    selectedEcDate = null;
+    document.getElementById('ec_display_text').innerText = 'Select Date...';
+    document.getElementById('week_picker').value = '';
+    document.getElementById('ec_popup').style.display = 'none';
+    renderEcGrid();
+    loadCollection(); // Fetch empty or default
+}
+
+function changeEcMonth(delta) {
+    viewEcMonth += delta;
+    if (viewEcMonth > 13) { viewEcMonth = 1; viewEcYear++; }
+    if (viewEcMonth < 1) { viewEcMonth = 13; viewEcYear--; }
+    renderEcGrid();
+}
+
+function selectEcDay(day) {
+    selectedEcDate = { year: viewEcYear, month: viewEcMonth, day: day };
+    updateEcInputText();
+    document.getElementById('ec_popup').style.display = 'none';
+}
+
+function updateEcInputText() {
+    if(!selectedEcDate) return;
+    document.getElementById('ec_display_text').innerText = `${String(selectedEcDate.month).padStart(2,'0')}/${String(selectedEcDate.day).padStart(2,'0')}/${selectedEcDate.year}`;
+    const gDate = ethiopianToGregorian(selectedEcDate.year, selectedEcDate.month, selectedEcDate.day);
+    document.getElementById('week_picker').value = gDate.toISOString().split('T')[0];
+    loadCollection(); // Fetch data when EC date is selected
+}
+
+function renderEcGrid() {
+    document.getElementById('ec_month_year').innerText = `${ETHIOPIAN_MONTHS[viewEcMonth - 1]} ${viewEcYear}`;
+    
+    const gDateFirst = ethiopianToGregorian(viewEcYear, viewEcMonth, 1);
+    const startDay = gDateFirst.getDay(); 
+    
+    const daysInMonth = viewEcMonth === 13 ? (((viewEcYear + 1) % 4 === 0) ? 6 : 5) : 30;
+    
+    let html = '';
+    for(let i=0; i<startDay; i++) html += `<div class="ec-day empty"></div>`;
+    
+    for(let d=1; d<=daysInMonth; d++) {
+        let isSel = selectedEcDate && selectedEcDate.year === viewEcYear && selectedEcDate.month === viewEcMonth && selectedEcDate.day === d;
+        html += `<div class="ec-day ${isSel ? 'selected' : ''}" onclick="selectEcDay(${d})">${d}</div>`;
+    }
+    document.getElementById('ec_days_grid').innerHTML = html;
+}
+
+// --- Generic Calendar Logic ---
 function formatEthiopian(gDateString) {
     if(!gDateString) return '-';
     const d = new Date(gDateString);
@@ -300,7 +512,7 @@ async function loadCollection() {
                 : `<span class="badge-unpaid"><i class="fa-solid fa-xmark"></i> Not Paid</span>`;
                 
             html += `<tr>
-                <td style="font-weight: 600; color: var(--text);">${m.full_name}</td>
+                <td style="font-weight: 600; color: var(--text);"><a href="/members.html" style="color: var(--primary); text-decoration: none;">${m.full_name}</a></td>
                 <td style="color: var(--text-muted);">${m.phone || '-'}</td>
                 <td><span style="background: var(--bg); padding:4px 8px; border-radius:6px; font-size:12px; border:1px solid var(--border);">${m.period_type}</span></td>
                 <td style="color: var(--success); font-weight: 700;">${m.paid_this_week ? m.paid_this_week.toLocaleString() + ' Birr' : '-'}</td>
@@ -311,14 +523,14 @@ async function loadCollection() {
     document.getElementById('collection_table').innerHTML = html;
 }
 
-document.getElementById('week_picker').addEventListener('change', loadCollection);
-
 (async () => {
     loadPreferences();
     const ok = await checkAuth();
     if (ok) {
         // Default to today to get current week
-        document.getElementById('week_picker').value = new Date().toISOString().split('T')[0];
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('date_picker_gc').value = todayStr;
+        document.getElementById('week_picker').value = todayStr; // Initialize hidden input
         loadCollection();
     }
 })();

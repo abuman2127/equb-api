@@ -127,6 +127,65 @@ app.get('/me', (req, res) => {
     res.json({ userId: req.session.userId, role: req.session.role });
 });
 
+app.post('/groups/:groupId/select-winner-manual', requireLogin, requireAdmin, async (req, res) => {
+    const { groupId } = req.params;
+    const { member_id } = req.body;
+    try {
+        const cycleResult = await pool.query(
+            `SELECT id FROM cycles WHERE group_id = $1 AND status = 'active' ORDER BY id DESC LIMIT 1`,
+            [groupId]
+        );
+        if (cycleResult.rows.length === 0) {
+            return res.status(400).json({ error: 'No active cycle for this group' });
+        }
+        const cycleId = cycleResult.rows[0].id;
+
+        const memberResult = await pool.query(`SELECT id, full_name, group_member_no FROM members WHERE id = $1`, [member_id]);
+        if (memberResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Member not found' });
+        }
+        const member = memberResult.rows[0];
+
+        const alreadyWon = await pool.query(
+            `SELECT 1 FROM payouts po
+             JOIN members m2 ON po.member_id = m2.id
+             WHERE po.cycle_id = $1 AND m2.group_id = $2 AND m2.group_member_no = $3`,
+            [cycleId, groupId, member.group_member_no]
+        );
+        if (alreadyWon.rows.length > 0) {
+            return res.status(400).json({ error: 'This slot has already won this cycle' });
+        }
+
+        const potResult = await pool.query(
+            `SELECT COALESCE(SUM(p.amount), 0) AS total
+             FROM payments p
+             JOIN members m ON p.member_id = m.id
+             JOIN cycles c ON c.id = $1
+             WHERE m.group_id = $2 AND p.paid_at >= c.start_date`,
+            [cycleId, groupId]
+        );
+        const potAmount = Number(potResult.rows[0].total);
+
+        const roundResult = await pool.query(`SELECT COUNT(*) FROM payouts WHERE cycle_id = $1`, [cycleId]);
+        const roundNumber = Number(roundResult.rows[0].count) + 1;
+
+        const payoutResult = await pool.query(
+            `INSERT INTO payouts (cycle_id, member_id, round_number, amount) VALUES ($1, $2, $3, $4) RETURNING *`,
+            [cycleId, member.id, roundNumber, potAmount]
+        );
+
+        res.json({
+            winner: member.full_name,
+            member_id: member.id,
+            round: roundNumber,
+            amount: potAmount,
+            payout: payoutResult.rows[0]
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
 // ---- Members & Payments (Admin + Cashier) ----
 app.post('/members', requireLogin, async (req, res) => {
     const { full_name, phone, period_type, group_id, group_member_no } = req.body;
@@ -936,6 +995,53 @@ app.post('/groups/:groupId/select-winner', requireLogin, requireAdmin, async (re
             amount: potAmount,
             payout: payoutResult.rows[0]
         });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/groups/:groupId/members-summary', requireLogin, async (req, res) => {
+    const { groupId } = req.params;
+    try {
+        const cycleResult = await pool.query(
+            `SELECT id FROM cycles WHERE group_id = $1 AND status = 'active' ORDER BY id DESC LIMIT 1`,
+            [groupId]
+        );
+        const cycleId = cycleResult.rows[0]?.id || null;
+
+        const membersResult = await pool.query(
+            `SELECT m.id, m.full_name, m.group_member_no,
+                    COALESCE(SUM(p.amount), 0) AS total_paid,
+                    COUNT(p.id) AS rounds_paid
+             FROM members m
+             LEFT JOIN payments p ON p.member_id = m.id
+             WHERE m.group_id = $1 AND m.is_active = true
+             GROUP BY m.id
+             ORDER BY m.group_member_no`,
+            [groupId]
+        );
+
+        let wonNumbers = [];
+        if (cycleId) {
+            const wonResult = await pool.query(
+                `SELECT DISTINCT m2.group_member_no
+                 FROM payouts po
+                 JOIN members m2 ON po.member_id = m2.id
+                 WHERE po.cycle_id = $1 AND m2.group_id = $2`,
+                [cycleId, groupId]
+            );
+            wonNumbers = wonResult.rows.map(r => r.group_member_no);
+        }
+
+        const members = membersResult.rows.map(m => ({
+            ...m,
+            total_paid: Number(m.total_paid),
+            rounds_paid: Number(m.rounds_paid),
+            already_won: wonNumbers.includes(m.group_member_no)
+        }));
+
+        res.json({ cycle_id: cycleId, members });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });

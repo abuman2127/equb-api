@@ -76,12 +76,10 @@
         .container { padding: 32px; max-width: 1400px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 24px; }
         .page-title { font-size: 24px; font-weight: 700; color: var(--text); display: flex; justify-content: space-between; align-items: center;}
         
-        /* Toolbar & Inputs */
         .toolbar { display: flex; justify-content: space-between; align-items: flex-end; background: var(--card); padding: 16px 24px; border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow-sm); flex-wrap: wrap; gap: 16px; }
         select.form-input, input[type="date"] { background: var(--bg); border: 1px solid var(--border); padding: 10px 16px; border-radius: var(--radius-sm); font-size: 14px; color: var(--text); outline: none; font-family: inherit; height: 42px; color-scheme: light dark; }
         .week-range { font-size: 14px; font-weight: 600; color: var(--text-muted); background: var(--bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); align-self: flex-end; height: 42px; display: flex; align-items: center; gap: 8px; }
 
-        /* Stat Cards */
         .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
         .stat-card { background: var(--card); border-radius: var(--radius-md); padding: 20px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; align-items: flex-start; gap: 16px; }
         .stat-card .stat-icon { width: 46px; height: 46px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
@@ -91,7 +89,6 @@
         .stat-card .label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .stat-card .value { font-size: 24px; font-weight: 700; margin-top: 4px; color: var(--text); }
 
-        /* Panel & Tables */
         .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-sm); }
         .panel-header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .panel-header h2 { margin: 0; font-size: 18px; color: var(--text); display: flex; align-items: center; gap: 8px;}
@@ -105,9 +102,6 @@
         .badge-paid { background: var(--success-bg); color: var(--success); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
         .badge-unpaid { background: var(--danger-bg); color: var(--danger); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
 
-        /* ================================================== */
-        /* CUSTOM EC POPUP CALENDAR STYLES                    */
-        /* ================================================== */
         .ec-calendar-wrapper { position: relative; min-width: 240px; display: none; }
         .ec-calendar-input {
             background: var(--bg); border: 1px solid var(--border); padding: 10px 16px; height: 42px;
@@ -130,9 +124,6 @@
         .ec-footer { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
         .ec-footer button { background: none; border: none; color: var(--primary); font-weight: 600; font-size: 13px; cursor: pointer; padding: 4px; }
 
-        /* ================================================== */
-        /* MOBILE RESPONSIVE PATCH                            */
-        /* ================================================== */
         .mobile-toggle { display: none; background: transparent; border: none; color: var(--text); font-size: 22px; cursor: pointer; padding: 0; margin-right: 12px; }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 95; backdrop-filter: blur(2px); }
         .sidebar-overlay.show { display: block; }
@@ -280,25 +271,18 @@
                     <h2><i class="fa-solid fa-clipboard-list" style="color: var(--primary);"></i> Member Status</h2>
                 </div>
                 <div class="table-wrapper">
-                    <table id="collection_table">
-                        </table>
+                    <table id="collection_table"></table>
                 </div>
             </div>
         </div>
     </div>
 
 <script>
-// ==========================================
-// MOBILE MENU TOGGLE
-// ==========================================
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('show');
     document.getElementById('sidebar_overlay').classList.toggle('show');
 }
 
-// ==========================================
-// ETHIOPIAN CALENDAR MATH & UTILS
-// ==========================================
 const ETHIOPIAN_MONTHS = ['Meskerem','Tikimt','Hidar','Tahsas','Tir','Yekatit','Megabit','Miazia','Ginbot','Sene','Hamle','Nehase','Pagume'];
 
 function gregorianToEthiopian(gDate) {
@@ -321,9 +305,6 @@ function ethiopianToGregorian(eYear, eMonth, eDay) {
     return new Date(baseGC.getTime() + (daysToCurrent * 86400000));
 }
 
-// ==========================================
-// CUSTOM EC DATE PICKER POPUP LOGIC
-// ==========================================
 let currentInputMode = 'GC';
 let viewEcYear, viewEcMonth;
 let selectedEcDate = null; 
@@ -387,7 +368,6 @@ function changeEcMonth(delta) {
     renderEcGrid();
 }
 
-// Selects the day from the grid picker
 function selectEcDay(day) {
     selectedEcDate = { year: viewEcYear, month: viewEcMonth, day: day };
     updateEcInputText();
@@ -420,7 +400,6 @@ function renderEcGrid() {
     document.getElementById('ec_days_grid').innerHTML = html;
 }
 
-// --- General Calendar Logic ---
 function formatEthiopian(gDateString) {
     if(!gDateString) return '-';
     const d = new Date(gDateString);
@@ -439,7 +418,6 @@ function formatDate(gDateString) {
     return new Date(gDateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-// --- Theme Logic ---
 function toggleDarkMode() {
     document.body.classList.toggle('dark');
     const isDark = document.body.classList.contains('dark');
@@ -456,7 +434,6 @@ function loadPreferences() {
     document.getElementById('cal_toggle').innerHTML = calType === 'EC' ? '<i class="fa-solid fa-calendar"></i> EC Mode' : '<i class="fa-solid fa-calendar"></i> GC Mode';
 }
 
-// --- Search Filter Logic ---
 function filterMembers() {
     const query = document.getElementById('search_box').value.toLowerCase();
     const rows = document.querySelectorAll('#collection_table tr');
@@ -468,7 +445,6 @@ function filterMembers() {
     });
 }
 
-// --- API Logic ---
 async function checkAuth() {
     const res = await fetch('/me');
     if (!res.ok) { window.location.href = '/login.html'; return false; }
@@ -501,7 +477,6 @@ async function loadCollection() {
     if (!res.ok) return;
     const data = await res.json();
 
-    // Format week boundaries using EC/GC converter setup
     const startStr = formatDate(data.week_start);
     const endStr = formatDate(data.week_end);
     document.getElementById('week_range').innerHTML = `<i class="fa-solid fa-calendar-week"></i> ${startStr} — ${endStr}`;
@@ -521,7 +496,7 @@ async function loadCollection() {
                 : `<span class="badge-unpaid"><i class="fa-solid fa-xmark"></i> Not Paid</span>`;
                 
             html += `<tr>
-                <td style="font-weight: 600;"><a href="/members.html" style="color: var(--primary); text-decoration: none;">${m.full_name}</a></td>
+                <td style="font-weight: 600;"><a href="/member-detail.html?id=${m.id}" style="color: var(--primary); text-decoration: none;">${m.full_name}</a></td>
                 <td style="color: var(--text-muted);">${m.phone || '-'}</td>
                 <td><span style="background: var(--bg); padding:4px 8px; border-radius:6px; font-size:12px; border:1px solid var(--border);">${m.period_type}</span></td>
                 <td style="color: var(--success); font-weight: 700;">${m.paid_this_week ? m.paid_this_week.toLocaleString() + ' Birr' : '-'}</td>

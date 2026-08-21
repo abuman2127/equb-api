@@ -833,7 +833,7 @@ app.get('/daily-collection', requireLogin, async (req, res) => {
 });
 
 app.get('/weekly-collection', requireLogin, async (req, res) => {
-    const { start_date } = req.query;
+    const { start_date, group_id } = req.query;
     let weekStart;
     if (start_date) {
         weekStart = start_date;
@@ -848,8 +848,11 @@ app.get('/weekly-collection', requireLogin, async (req, res) => {
 
     try {
         const membersResult = await pool.query(
-         `SELECT id, full_name, phone, period_type FROM members WHERE is_active = true AND period_type = 'weekly' ORDER BY id`
-);
+            group_id
+                ? `SELECT id, full_name, phone, period_type FROM members WHERE is_active = true AND period_type = 'weekly' AND group_id = $1 ORDER BY id`
+                : `SELECT id, full_name, phone, period_type FROM members WHERE is_active = true AND period_type = 'weekly' ORDER BY id`,
+            group_id ? [group_id] : []
+        );
         const paymentsResult = await pool.query(
             `SELECT member_id, SUM(amount) AS total
              FROM payments

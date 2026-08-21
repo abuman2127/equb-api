@@ -785,12 +785,15 @@ app.get('/export/payments', requireLogin, requireAdmin, async (req, res) => {
 
 // ---- Daily / Weekly Collection ----
 app.get('/daily-collection', requireLogin, async (req, res) => {
-    const { date } = req.query;
+    const { date, group_id } = req.query;
     const targetDate = date || new Date().toISOString().split('T')[0];
     try {
         const membersResult = await pool.query(
-    `SELECT id, full_name, phone, period_type FROM members WHERE is_active = true AND period_type = 'daily' ORDER BY id`
-);
+            group_id
+                ? `SELECT id, full_name, phone, period_type FROM members WHERE is_active = true AND period_type = 'daily' AND group_id = $1 ORDER BY id`
+                : `SELECT id, full_name, phone, period_type FROM members WHERE is_active = true AND period_type = 'daily' ORDER BY id`,
+            group_id ? [group_id] : []
+        );
         const paymentsResult = await pool.query(
             `SELECT member_id, SUM(amount) AS total
              FROM payments

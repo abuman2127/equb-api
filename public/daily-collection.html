@@ -76,13 +76,12 @@
         .container { padding: 32px; max-width: 1400px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 24px; }
         .page-title { font-size: 24px; font-weight: 700; color: var(--text); display: flex; justify-content: space-between; align-items: center;}
         
-        /* Toolbar & Inputs */
-        .toolbar { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 16px 24px; border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 16px 24px; border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow-sm); flex-wrap: wrap; gap: 16px; }
         .date-picker-wrapper { display: flex; align-items: center; gap: 12px; }
         .date-picker-wrapper label { font-size: 14px; font-weight: 600; color: var(--text-muted); }
         input[type="date"] { background: var(--bg); border: 1px solid var(--border); padding: 10px 16px; border-radius: var(--radius-sm); font-size: 14px; color: var(--text); outline: none; color-scheme: light dark; font-family: inherit;}
+        select.form-input { background: var(--bg); border: 1px solid var(--border); padding: 10px 16px; border-radius: var(--radius-sm); font-size: 14px; color: var(--text); outline: none; font-family: inherit; height: 42px; }
 
-        /* Stat Cards */
         .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
         .stat-card { background: var(--card); border-radius: var(--radius-md); padding: 20px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; align-items: flex-start; gap: 16px; }
         .stat-card .stat-icon { width: 46px; height: 46px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
@@ -92,7 +91,6 @@
         .stat-card .label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .stat-card .value { font-size: 24px; font-weight: 700; margin-top: 4px; color: var(--text); }
 
-        /* Panel & Tables */
         .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-sm); }
         .panel-header { margin-bottom: 20px; }
         .panel-header h2 { margin: 0; font-size: 18px; color: var(--text); display: flex; align-items: center; gap: 8px;}
@@ -106,9 +104,6 @@
         .badge-paid { background: var(--success-bg); color: var(--success); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
         .badge-unpaid { background: var(--danger-bg); color: var(--danger); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
 
-        /* ================================================== */
-        /* CUSTOM EC POPUP CALENDAR STYLES                    */
-        /* ================================================== */
         .ec-calendar-wrapper { position: relative; min-width: 240px; display: none; }
         .ec-calendar-input {
             background: var(--bg); border: 1px solid var(--border); padding: 10px 16px; height: 42px;
@@ -131,9 +126,6 @@
         .ec-footer { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
         .ec-footer button { background: none; border: none; color: var(--primary); font-weight: 600; font-size: 13px; cursor: pointer; padding: 4px; }
 
-        /* ================================================== */
-        /* MOBILE RESPONSIVE PATCH                            */
-        /* ================================================== */
         .mobile-toggle { display: none; background: transparent; border: none; color: var(--text); font-size: 22px; cursor: pointer; padding: 0; margin-right: 12px; }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 95; backdrop-filter: blur(2px); }
         .sidebar-overlay.show { display: block; }
@@ -159,7 +151,6 @@
 </head>
 <body>
 
-    <!-- OVERLAY FOR MOBILE -->
     <div class="sidebar-overlay" id="sidebar_overlay" onclick="toggleSidebar()"></div>
 
     <aside class="sidebar" id="sidebar">
@@ -191,7 +182,6 @@
     <div class="main-content">
         <header class="header">
             <div class="header-left">
-                <!-- HAMBURGER ICON -->
                 <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
                 <div class="search-bar">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -209,18 +199,22 @@
             <h1 class="page-title">Daily Collection Overview</h1>
 
             <div class="toolbar">
-                <div class="date-picker-wrapper" style="align-items: flex-end; width: 100%;">
-                    <!-- GC & EC TOGGLE DATE FIELD -->
+                <div style="width: 100%; max-width: 220px;">
+                    <label style="font-size:13px; font-weight:600; color:var(--text-muted); margin-bottom:6px; display:block;"><i class="fa-solid fa-users-rectangle"></i> Group</label>
+                    <select id="group_selector" class="form-input" onchange="loadCollection()">
+                        <option value="">All Groups</option>
+                    </select>
+                </div>
+
+                <div class="date-picker-wrapper" style="align-items: flex-end;">
                     <div style="width: 100%; max-width: 300px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                             <label style="font-size:13px; font-weight:600; color:var(--text-muted);"><i class="fa-solid fa-calendar-day"></i> Select Date (<span id="date_mode_label">GC</span>)</label>
                             <button type="button" onclick="toggleInputMode(event)" style="background: none; border: none; color: var(--primary); font-size: 11px; font-weight: 700; cursor: pointer; padding: 0;">Switch to EC</button>
                         </div>
                         
-                        <!-- Standard GC Date Picker -->
                         <input id="date_picker_gc" type="date" class="form-input" onchange="syncGcToBackend()" style="height: 42px; width: 100%;">
                         
-                        <!-- Custom Ethiopian Popup Picker -->
                         <div class="ec-calendar-wrapper" id="ec_wrapper">
                             <div class="ec-calendar-input" onclick="toggleEcPopup()">
                                 <span id="ec_display_text">MM/DD/YYYY</span>
@@ -244,7 +238,6 @@
                             </div>
                         </div>
                         
-                        <!-- Hidden input that triggers the backend fetch -->
                         <input type="hidden" id="date_picker">
                     </div>
                 </div>
@@ -279,26 +272,18 @@
                     <h2><i class="fa-solid fa-clipboard-list" style="color: var(--primary);"></i> Member Status</h2>
                 </div>
                 <div class="table-wrapper">
-                    <table id="collection_table">
-                        <!-- Populated by JS -->
-                    </table>
+                    <table id="collection_table"></table>
                 </div>
             </div>
         </div>
     </div>
 
 <script>
-// ==========================================
-// MOBILE MENU TOGGLE
-// ==========================================
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('show');
     document.getElementById('sidebar_overlay').classList.toggle('show');
 }
 
-// ==========================================
-// ETHIOPIAN CALENDAR MATH & UTILS
-// ==========================================
 const ETHIOPIAN_MONTHS = ['Meskerem','Tikimt','Hidar','Tahsas','Tir','Yekatit','Megabit','Miazia','Ginbot','Sene','Hamle','Nehase','Pagume'];
 
 function gregorianToEthiopian(gDate) {
@@ -321,9 +306,6 @@ function ethiopianToGregorian(eYear, eMonth, eDay) {
     return new Date(baseGC.getTime() + (daysToCurrent * 86400000));
 }
 
-// ==========================================
-// CUSTOM EC DATE PICKER POPUP LOGIC
-// ==========================================
 let currentInputMode = 'GC';
 let viewEcYear, viewEcMonth;
 let selectedEcDate = null; 
@@ -346,7 +328,7 @@ function toggleInputMode(event) {
 
 function syncGcToBackend() {
     document.getElementById('date_picker').value = document.getElementById('date_picker_gc').value;
-    loadCollection(); // Fetch data when GC date changes
+    loadCollection();
 }
 
 function toggleEcPopup() {
@@ -355,7 +337,6 @@ function toggleEcPopup() {
     renderEcGrid();
 }
 
-// Close popup if clicking outside
 document.addEventListener('click', function(e) {
     const wrapper = document.getElementById('ec_wrapper');
     const popup = document.getElementById('ec_popup');
@@ -378,7 +359,7 @@ function clearEcDate() {
     document.getElementById('date_picker').value = '';
     document.getElementById('ec_popup').style.display = 'none';
     renderEcGrid();
-    loadCollection(); // Fetch empty or default
+    loadCollection();
 }
 
 function changeEcMonth(delta) {
@@ -399,7 +380,7 @@ function updateEcInputText() {
     document.getElementById('ec_display_text').innerText = `${String(selectedEcDate.month).padStart(2,'0')}/${String(selectedEcDate.day).padStart(2,'0')}/${selectedEcDate.year}`;
     const gDate = ethiopianToGregorian(selectedEcDate.year, selectedEcDate.month, selectedEcDate.day);
     document.getElementById('date_picker').value = gDate.toISOString().split('T')[0];
-    loadCollection(); // Fetch data when EC date is selected
+    loadCollection();
 }
 
 function renderEcGrid() {
@@ -420,7 +401,6 @@ function renderEcGrid() {
     document.getElementById('ec_days_grid').innerHTML = html;
 }
 
-// --- Theme & Generic Calendar Logic ---
 function toggleCalendar() {
     const current = localStorage.getItem('calendarType') || 'GC';
     localStorage.setItem('calendarType', current === 'GC' ? 'EC' : 'GC');
@@ -444,20 +424,18 @@ function loadPreferences() {
     document.getElementById('cal_toggle').innerHTML = calType === 'EC' ? '<i class="fa-solid fa-calendar"></i> EC Mode' : '<i class="fa-solid fa-calendar"></i> GC Mode';
 }
 
-// --- Search Filter Logic ---
 function filterMembers() {
     const query = document.getElementById('search_box').value.toLowerCase();
     const rows = document.querySelectorAll('#collection_table tr');
     rows.forEach((row, index) => {
-        if (index === 0) return; // Skip header
-        const nameCell = row.cells[0]; // Name is in the first column
+        if (index === 0) return;
+        const nameCell = row.cells[0];
         if (!nameCell) return;
         const name = nameCell.innerText.toLowerCase();
         row.style.display = name.includes(query) ? '' : 'none';
     });
 }
 
-// --- API Logic ---
 async function checkAuth() {
     const res = await fetch('/me');
     if (!res.ok) { window.location.href = '/login.html'; return false; }
@@ -469,9 +447,21 @@ async function logout() {
     window.location.href = '/login.html';
 }
 
+async function loadGroupOptions() {
+    const res = await fetch('/groups');
+    if (!res.ok) return;
+    const groups = await res.json();
+    const selector = document.getElementById('group_selector');
+    selector.innerHTML = '<option value="">All Groups</option>' +
+        groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+}
+
 async function loadCollection() {
     const dateVal = document.getElementById('date_picker').value;
-    const url = dateVal ? `/daily-collection?date=${dateVal}` : '/daily-collection';
+    const groupId = document.getElementById('group_selector').value;
+    let url = '/daily-collection?';
+    if (dateVal) url += `date=${dateVal}&`;
+    if (groupId) url += `group_id=${groupId}`;
     const res = await fetch(url);
     if (!res.ok) return;
     const data = await res.json();
@@ -491,7 +481,7 @@ async function loadCollection() {
                 : `<span class="badge-unpaid"><i class="fa-solid fa-xmark"></i> Not Paid</span>`;
                 
             html += `<tr>
-                <td style="font-weight: 600; color: var(--text);"><a href="/members.html" style="color: var(--primary); text-decoration: none;">${m.full_name}</a></td>
+                <td style="font-weight: 600; color: var(--text);"><a href="/member-detail.html?id=${m.id}" style="color: var(--primary); text-decoration: none;">${m.full_name}</a></td>
                 <td style="color: var(--text-muted);">${m.phone || '-'}</td>
                 <td><span style="background: var(--bg); padding:4px 8px; border-radius:6px; font-size:12px; border:1px solid var(--border);">${m.period_type}</span></td>
                 <td style="color: var(--success); font-weight: 700;">${m.paid_today ? m.paid_today.toLocaleString() + ' Birr' : '-'}</td>
@@ -508,7 +498,8 @@ async function loadCollection() {
     if (ok) {
         const todayStr = new Date().toISOString().split('T')[0];
         document.getElementById('date_picker_gc').value = todayStr;
-        document.getElementById('date_picker').value = todayStr; // Initialize hidden input
+        document.getElementById('date_picker').value = todayStr;
+        await loadGroupOptions();
         loadCollection();
     }
 })();
